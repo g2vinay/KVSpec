@@ -101,6 +101,7 @@ The azure com.azure.identity package provides implementations for Active Directo
 ~~~ java
 package com.azure.identity;
 
+    // Use Fluent Pattern During Implementation
     //This is the package with most implementation needed.
     // Scott had the methods Static in his framework -- check the need and usage for it.
     public abstract class AzureCredential extends AsyncTokenCredentials {
@@ -120,7 +121,7 @@ package com.azure.identity;
     }
 
     //Not in focus for now.
-    public class ClientCertificateCredential exteds AzureCredential {
+    public class ClientCertificateCredential extends AzureCredential {
         public ClientCertificateCredential(X509Certificate certificate, string authority, List<HttpPipelinePolicy> policies);
     }    
 
@@ -134,6 +135,7 @@ package com.azure.identity;
 ~~~ java
 package com.azure.identity;
 
+    //Use Fluent Pattern during implementation
     public class TokenCredentialProvider extends AsyncTokenCredentials {
         protected TokenCredentialProvider();
 
@@ -171,7 +173,6 @@ package com.azure.keyvault
 
 
     //This exists in Secrets API, accepts AsyncServiceClientCredentials for async client, ServiceClientCredentials for sync client
-
      public final class SecretAsyncClientBuilder {
         private final List<HttpPipelinePolicy> policies;
         private AsyncServiceClientCredentials credentials;

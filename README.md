@@ -222,6 +222,7 @@ package com.azure.keyvault
 ~~~ java
 
   //Using ClientSecretCredential
+  //Use Fluent Pattern for SecretCredentials or Providers.
   SecretAsyncClient.builder()
     .vaultEndpoint("https://myvault.vault.azure.net/")
     .credentials(new ClientSecretCredential(getClientId(), getClientSecret(), getAuthority()))

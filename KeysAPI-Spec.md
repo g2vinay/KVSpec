@@ -1,5 +1,5 @@
 
-## __KeyClient__
+## __KeyAsyncClient__
 ~~~ java
 public class KeyAsyncClient extends ServiceClient
 {
@@ -109,8 +109,7 @@ ServiceFuture<KeyBundle> importKeyAsync(ImportKeyRequest importKeyRequest, final
 // TODO: Add Track one Set Key usage examples.
 ~~~
 
-
-### KeyClient Get Key Operations
+### KeyAsyncClient Get Key Operations
 ~~~ java
 public Mono<Response<Key>> getKey(String name);
 public Mono<Response<Key>> getKey(String name, String version);

@@ -399,7 +399,7 @@ public class KeyBase {
      * 'Recoverable+ProtectedSubscription'.
      */
     @JsonProperty(value = "recoveryLevel", access = JsonProperty.Access.WRITE_ONLY)
-    private DeletionRecoveryLevel recoveryLevel;
+    private String recoveryLevel;
 
     /**
      * Get the recoveryLevel value.
@@ -446,7 +446,7 @@ public class KeyImport extends KeyBase {
 }
 
 
-public class DeletedKey extends KeyBase {
+public final class DeletedKey extends KeyBase {
     /**
      * The url of the recovery object, used to identify and recover the deleted
      * key.

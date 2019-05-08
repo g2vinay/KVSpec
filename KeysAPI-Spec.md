@@ -20,8 +20,8 @@ public class KeyAsyncClient extends ServiceClient
     public Mono<Response<KeyBase>> updateKey(KeyBase key);
 
     //TODO: Investigate about createKey vs setKey, and then make a final call.
-    public Mono<Response<Key>> setKey(String name, JsonWebKeyType keyType);
-    public Mono<Response<Key>> setKey(Key key);
+    public Mono<Response<Key>> createKey(String name, JsonWebKeyType keyType);
+    public Mono<Response<Key>> createKey(Key key);
     
     public Mono<Response<Key>> importKey(String name, JsonWebKey key);
     public Mono<Response<Key>> importKey(KeyImport keyImport);
@@ -178,7 +178,7 @@ public Flux<KeyBase> listKeys();
 ~~~ java
 // TODO: Implement and Verify the usage.
 keyAsyncClient.listKeys()
-	.subscribe(key -> System.out.println(key.id()));
+	.subscribe(key -> System.out.println(key.keyId()));
  
 ~~~
 
@@ -329,16 +329,11 @@ public class KeyBase {
 
     //TODO: Add appropriate setters for the variables
     /**
-     * The Json web key.
-     */
-    @JsonProperty(value = "key")
-    private JsonWebKey key;
-
-    /**
      * Key identifier.
      */
-    @JsonProperty(value = "id")
-    private String id;
+    @JsonProperty(value = "kid")
+    private String kid;
+
 
     /**
      * Type of the key.
@@ -416,14 +411,16 @@ public class Key extends KeyBase {
     private Integer keySize;
     private List<JsonWebKeyOperation> keyOperations;
     private JsonWebKeyCurveName curve;
+    
+    @JsonProperty(value = "key")
+    private JsonWebKey key;
 
-	public Key(String name, JsonWebKeyType keyType) {}
+    public Key(String name, JsonWebKeyType keyType) {}
 
-
-	public Key keySize(Integer keySize){
-		this.keySize = keySize;
-		return this;
-	}
+     public Key keySize(Integer keySize){
+	this.keySize = keySize;
+	return this;
+     }
 
 	//Add setters in similar way for other variables
 
@@ -431,8 +428,10 @@ public class Key extends KeyBase {
 
 
 public class KeyImport extends KeyBase {
-
 	private boolean hsm;
+	
+	@JsonProperty(value = "key")
+	private JsonWebKey key;
 
 	public KeyImport(String name, JsonWebKey key) {}
 

@@ -30,8 +30,8 @@ public class SecretClient extends ServiceClient
     public Response<Secret> recoverDeletedSecret(String name);
     public VoidResponse purgeDeletedSecret(String name);
 
-    public Mono<Response<byte[]>> backupSecret(String name);
-    public Mono<Response<Secret>> restoreSecret(byte[] backup);
+    public Response<byte[]> backupSecret(String name);
+    public Response<Secret> restoreSecret(byte[] backup);
 }
 
 ```

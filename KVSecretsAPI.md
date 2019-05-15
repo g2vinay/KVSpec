@@ -205,4 +205,6 @@ secretAsyncClient.deleteSecret("EventhubsAccountKey").subscribe(deletedSecretRes
     * Response<T> vs T
 
     * Base naming Pattern - Rename SecretAttributes to SecretBase.
+    
+    * Response.value().value() vs Response.<insert-name-here>.value()
 

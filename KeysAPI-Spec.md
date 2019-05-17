@@ -21,7 +21,8 @@ public class KeyAsyncClient extends ServiceClient
 
     //TODO: Investigate about createKey vs setKey, and then make a final call.
     public Mono<Response<Key>> createKey(String name, JsonWebKeyType keyType);
-    public Mono<Response<Key>> createKey(Key key);
+    public Mono<Response<Key>> createECKey(ECKeyCreateConfig ecKeyCreateConfig);
+    public Mono<Response<Key>> createRSAKey(RSAKeyCreateConfig rsaKeyCreateConfig);
     
     public Mono<Response<Key>> importKey(String name, JsonWebKey key);
     public Mono<Response<Key>> importKey(KeyImport keyImport);
@@ -413,7 +414,7 @@ public class Key extends KeyBase {
     private JsonWebKeyCurveName curve;
     
     @JsonProperty(value = "key")
-    private JsonWebKey key;
+    private JsonWebKey keyMaterial;
 
     public Key(String name, JsonWebKeyType keyType) {}
 

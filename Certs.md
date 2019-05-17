@@ -212,7 +212,9 @@ Certificate cert2 = Certificate.builder("securityCert1")
                         .secretContentType(SecretContentType.MIME_PEM)
                         .keyType(JsonWebKeyType.EC)
                         .reuseKey(true)
-                        .addLifeTimeAction(ActionType.AUTO_RENEW, )
+                        .addLifeTimeAction(ActionType.AUTO_RENEW)
+                            .activatingLifetimeStage(50)
+                            .renewDaysBeforeExpiry(30)
                         .build();
 
 

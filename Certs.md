@@ -18,6 +18,11 @@ public class CertificateAsyncClient extends ServiceClient
     // Talk to Scott about service side logic of just passing the certificate name, does it even work?
     public Mono<Response<CertificateOperation>> createCertificate(String name);
     public Mono<Response<CertificateOperation>> createCertificate(Certificate certificate);
+    
+    Proposition- 
+    public Mono<Response<Certificate>> createCertificate(Certificate certificate);
+    public Mono<Response<CertificateOperation>> createCertificate(String name);
+
 
     public Mono<Response<Certificate>> importCertificate( String certificateName, String certificateFilePath);
     public Mono<Response<Certificate>> importCertificate(CertificateImport certificateImport);
@@ -49,8 +54,8 @@ public class CertificateAsyncClient extends ServiceClient
 
     // Certificate Issuer methods
 
-    public Mono<Response<Issuer>> setCertificateIssuer(String name, String provider);
-    public Mono<Response<Issuer>> setCertificateIssuer(Issuer issuer);
+    public Mono<Response<Issuer>> createIssuer(String name, String provider);
+    public Mono<Response<Issuer>> createIssuer(Issuer issuer);
 
     public Mono<Response<Issuer>> getCertificateIssuer(String name);
 

@@ -21,7 +21,7 @@ public class CertificateAsyncClient extends ServiceClient
     
     Proposition- 
     public Mono<Response<Certificate>> createCertificate(Certificate certificate);
-    public Mono<Response<CertificateOperation>> createCertificate(String name);
+    public Mono<Response<Certificate>> createCertificate(String name);
 
 
     public Mono<Response<Certificate>> importCertificate( String certificateName, String certificateFilePath);
@@ -48,9 +48,7 @@ public class CertificateAsyncClient extends ServiceClient
     public Mono<Response<String>> mergeCertificate(String name, List<byte[]> x509Certificates);
 
     public Mono<Response<Certificate>> mergeCertificate(MergeCertificateConfig mergeCertificateConfig);
-
-
-
+    
 
     // Certificate Issuer methods
 
@@ -109,7 +107,6 @@ CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()
                             .vaultEndpoint("https://myvault.vault.azure.net/")
                             .credentials(AzureCredential.DEFAULT)
                             .build();       
-
 
 
 Certificate cert2 = Certificate.builder("securityCert1")
@@ -190,7 +187,7 @@ Certificate cert2 = Certificate.builder("securityCert1")
                         .validityInMonths(12)
                         .issuerName("Self")
                         .secretContentType(SecretContentType.MIME_PEM)
-                        .keyType(JsonWebKeyType.RSA)
+                        .RSAKey(JsonWebKeyType.RSA)
                         .keySize(4076)
                         .build();
 
@@ -215,7 +212,7 @@ Certificate cert2 = Certificate.builder("securityCert1")
                         .validityInMonths(12)
                         .issuerName("Self")
                         .secretContentType(SecretContentType.MIME_PEM)
-                        .keyType(JsonWebKeyType.EC)
+                        .ECKey(JsonWebKeyType.EC)
                         .reuseKey(true)
                         .addLifeTimeAction(ActionType.AUTO_RENEW)
                             .activatingLifetimeStage(50)

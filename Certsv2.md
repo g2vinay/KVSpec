@@ -14,11 +14,10 @@ public class CertificateAsyncClient extends ServiceClient
     public Mono<Response<Certificate>> getCertificate(String name);
     public Mono<Response<Certificate>> getCertificate(String name, String version);
 
-    // Talk to Scott about service side logic of just passing the certificate name, does it even work?
+    // Rerturning certificate operation in async api is not intuitive and natural.
     public Mono<Response<CertificateOperation>> createCertificate(String name);
     public Mono<Response<CertificateOperation>> createCertificate(Certificate certificate);
     
-    Proposition- 
     public Mono<Response<Certificate>> createCertificate(Certificate certificate);
     public Mono<Response<Certificate>> createCertificate(String name);
 
@@ -30,14 +29,9 @@ public class CertificateAsyncClient extends ServiceClient
     public Flux<CertificateBase> listCertificates();
     public Flux<DeletedCertificate> listDeletedCertificates();
     
-    //Update works to only update tags and enabled attrbiutes.
-    // Proposition to replace this: 
-    public Mono<Response<Certificate>> updateCertificate(CerticiateBase certificate);
-    
-    wtih: 
-    
-    public Mono<Response<Certificate>> tags(String certificateName, Map<String, String> tags);
-    public Mono<Response<Certificate>> enabled(String certificateName, boolean enabled);
+    //Update works to only update tags and enabled attrbiutes.    
+    public Mono<Response<Certificate>> updateCertificateTags(String certificateName, Map<String, String> tags);
+    public Mono<Response<Certificate>> updateCertificateEnabled(String certificateName, boolean enabled);
 
     public Mono<Response<DeletedCertificate>> deleteCertificate(String name);
     public Mono<Response<DeletedCertificate>> getDeletedCertificate(String name);
@@ -49,7 +43,7 @@ public class CertificateAsyncClient extends ServiceClient
 
     public Mono<Response<byte[]>> getPendingCertificateSigningRequest(String certificateName);
 
-
+    // Q: In what scenarios is a list of byte[] passed in?
     public Mono<Response<String>> mergeCertificate(String name, List<byte[]> x509Certificates);
 
     public Mono<Response<Certificate>> mergeCertificate(MergeCertificateConfig mergeCertificateConfig);
@@ -57,8 +51,8 @@ public class CertificateAsyncClient extends ServiceClient
 
     // Certificate Issuer methods
 
-    public Mono<Response<Issuer>> createIssuer(String name, String provider);
-    public Mono<Response<Issuer>> createIssuer(Issuer issuer);
+    public Mono<Response<Issuer>> createCertificateIssuer(String name, String provider);
+    public Mono<Response<Issuer>> createCertificateIssuer(Issuer issuer);
 
     public Mono<Response<Issuer>> getCertificateIssuer(String name);
 
@@ -82,15 +76,9 @@ public class CertificateAsyncClient extends ServiceClient
     // Certificate Operation methods
     public Mono<Response<CertificateOperation>> getCertificateOperation(String certificateName);
     
-    Proposition - Currently these two operations work to cancel the certificate creation process only.
-      IF there is no future scope beyond cancelling the certificate creation for these methods, then
-    Replace these two: 
-    public Mono<Response<CertificateOperation>> deleteCertificateOperation(String certificateName);
-    public Mono<Response<CertificateOperation>> updateCertificateOperation(String certificateName, boolean cancellationRequested);
-    
-    with: 
-    public Mono<Response<CertificateOperation>> cancel_create(String certificateName);
-    
+     public Mono<Response<CertificateOperation>> deleteCertificateOperation(String certificateName);
+     public Mono<Response<CertificateOperation>> updateCertificateOperation(String certificateName, boolean cancellationRequested);
+       
 }
 
 public final class CertificateAsyncClientBuilder {
@@ -122,7 +110,8 @@ CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()
 Certificate cert2 = Certificate.builder("securityCert1")
                         .subjectName(""CN=SelfSignedJavaPkcs12")
                         .validityInMonths(12)
-                        .issuerName("Self")
+                        .issuerConfig("Self")
+                            .done()
                         .secretContentType(SecretContentType.MIME_PKCS12)
                         .build();
 
@@ -246,6 +235,32 @@ Certificate cert2 = Certificate.builder("securityCert1")
 
 
 CertificateOperation certOp2 = certificateAsyncClient.createCertificate(cert2).block().value();
+
+~~~
+
+
+## Import a pkcs certificate witg exportable RSA key of size 2048.
+~~~ java
+// TODO: Implement and Verify the usage.
+CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()
+                            .vaultEndpoint("https://myvault.vault.azure.net/")
+                            .credentials(AzureCredential.DEFAULT)
+                            .build();       
+
+
+CertificateImport certImport = CertificateImport.builder("securityCert1", certificateFilePath)
+                        .secretContentType(SecretContentType.PKCS12)
+                        .keyConfig(JsonWebKeyType.RSA)
+                          .keySize(2048)
+                          .exportable(true)
+                          .reuseKey(true)
+                          .done()
+                        .addLifeTimeAction(ActionType.AUTO_RENEW)
+                            .renewDaysBeforeExpiry(30)
+                            .done()
+                        .build();
+                        
+Certificate importedCertificate = certificateAsyncClient.importCertificate(certImport).block().value();
 
 ~~~
 
@@ -416,6 +431,12 @@ public class CertificateBase {
      */
     @JsonProperty(value = "managed", access = JsonProperty.Access.WRITE_ONLY)
     private Boolean managed;
+    
+    /**
+     * Thumbprint of the certificate.
+     */
+    @JsonProperty(value = "x5t", access = JsonProperty.Access.WRITE_ONLY)
+    private Base64Url x509Thumbprint;
 
 
 
@@ -450,12 +471,6 @@ public class Certificate extends CertificateBase {
     private String keyId;
 
 
-    /**
-     * Thumbprint of the certificate.
-     */
-    @JsonProperty(value = "x5t", access = JsonProperty.Access.WRITE_ONLY)
-    private Base64Url x509Thumbprint;
-
 
 }
 
@@ -475,6 +490,8 @@ public class CertificateImport extends CertificateBase {
      */
     @JsonProperty(value = "pwd")
     private String password;
+    
+    private CertificatePolicy policy;
 
 
     public CertificateImport(String name, String certificateFilePath){
@@ -677,9 +694,6 @@ public MergeCertificateConfig extends CertificateBase {
 
 }
 
-
-
-
 ~~~
 
 
@@ -697,14 +711,17 @@ public interface ICertificateBuilder {
 
     public ICertificateBuilder alternativeSubjectDns(String ... domainNames);
 
-    public ICertificateBuilder certificateTransparency(Boolean transparency);
-
     public IKeyConfiguration keyConfiguration(JsonWebKeyType webKeyType);
 
     public IIssuerConfiguration issuerConfiguration(String issuerName);
 
     public ICertificateBuilder addLifeTimeAction(ActionType actionType, Integer lifetimeActivatingStage, Integer renewDaysBeforeExpiry);
 
+}
+
+public interface ICertificateImportBuilder extends ICertificateBuilder {
+
+    public ICertificateBuilder password(String password);
 
 }
 
@@ -718,6 +735,9 @@ public interface IIssuerConfiguration {
     public IIssuerConfiguration issuerName(String subjectName);
 
     public IIssuerConfiguration certificateTypeRequest(String certificateTypeRequest);
+    
+    //Q: Move this to certificate properties.
+    public IIssuerConfiguration certificateTransparency(Boolean transparency);
 
     public ICertificateBuilder done();
 

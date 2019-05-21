@@ -101,7 +101,7 @@ public final class CertificateAsyncClientBuilder {
 
 
 
-## Create a test issuer issued Certificate valid for 1 year with EC Key and AutoRenewal set for 1 month before expiry using the same key.
+## Create a test issuer issued Certificate valid for 1 year with HSM RSA Key and AutoRenewal set for 1 month before expiry using the same key.
 ~~~ java
 // TODO: Implement and Verify the usage.
 CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()
@@ -137,7 +137,7 @@ CertificateOperation certOp4 = certificateAsyncClient.createCertificate(cert4).b
 ~~~
 
 
-## Import a pkcs certificate witg exportable EC key with P-384 elliptic curve.
+## Import a pkcs certificate witg HSM EC key with P-384 elliptic curve.
 ~~~ java
 // TODO: Implement and Verify the usage.
 CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()

@@ -101,7 +101,7 @@ public final class CertificateAsyncClientBuilder {
 
 
 
-## Create a SelfSigned Pem Certificate valid for 1 year with EC Key and AutoRenewal set for 1 month before expiry using the same key.
+## Create a test issuer issued Certificate valid for 1 year with EC Key and AutoRenewal set for 1 month before expiry using the same key.
 ~~~ java
 // TODO: Implement and Verify the usage.
 CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()
@@ -109,11 +109,20 @@ CertificateAsyncClient certificateAsyncClient = CertificateAsyncClient.builder()
                             .credentials(AzureCredential.DEFAULT)
                             .build();       
 
+Issuer issuer = new Issuer("createCertificateJavaPkcs12Issuer01")
+                        .credentials("accountId", "password")
+                        .addAdmin(new Administrator("John", "doe", "john.doe@contoso.com")
+                                     .phoneNumber("123324324"))
+                        .addAdmin(new Administrator("Ben", "doe", "Ben.doe@contoso.com"));
+
+Issuer createdIssuer = keyVaultClient.setCertificateIssuer(issuer).block().value();
+
+
 Certificate cert4 = new Certificate("securityCert1)
                         .x509subjectName("CN=SelfSignedJavaPem2")
                         .validityInMonths(12)
                         .secretContentType(SecretContentType.MIME_PEM)
-                        .issuerName("Self")
+                        .issuerName(createdIssuer.name())
                         .rsaKeyConfig(new RSAKeyConfig(JsonWebKeyType.RSA_HSM)
                                           .reuseKey(true)
                                           .keySize(2048))

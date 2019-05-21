@@ -17,9 +17,6 @@ public class CertificateAsyncClient extends ServiceClient
     // Rerturning certificate operation in async api is not intuitive and natural.
     public Mono<Response<CertificateOperation>> createCertificate(String name);
     public Mono<Response<CertificateOperation>> createCertificate(Certificate certificate);
-    
-    public Mono<Response<Certificate>> createCertificate(Certificate certificate);
-    public Mono<Response<Certificate>> createCertificate(String name);
 
     public Mono<Response<Certificate>> importCertificate( String certificateName, String certificateFilePath);
     public Mono<Response<Certificate>> importCertificate(CertificateImport certificateImport);

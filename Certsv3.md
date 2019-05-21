@@ -118,7 +118,7 @@ Issuer issuer = new Issuer("createCertificateJavaPkcs12Issuer01")
 Issuer createdIssuer = keyVaultClient.setCertificateIssuer(issuer).block().value();
 
 
-Certificate cert4 = new Certificate("securityCert1)
+Certificate cert4 = new Certificate("securityCert1")
                         .x509subjectName("CN=SelfSignedJavaPem2")
                         .validityInMonths(12)
                         .secretContentType(SecretContentType.MIME_PEM)
@@ -129,7 +129,7 @@ Certificate cert4 = new Certificate("securityCert1)
                         .addLifeTimeAction(new LifeTimeAction(ActionType.EMAIL_CONTACTS)
                                                .activateAtLifetimePercent(60))
                         .addLifeTimeAction(new LifeTimeAction(ActionType.AUTO_RENEW)
-                                               .renewAtDaysBeforeExpiry(50));
+                                               .renewAtDaysBeforeExpiry(30));
  
 
 CertificateOperation certOp4 = certificateAsyncClient.createCertificate(cert4).block().value();

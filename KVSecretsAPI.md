@@ -180,10 +180,9 @@ secretAsyncClient.getSecret("StorageAccountKey").subscribe(secretResponse -> {
     Secret secret = secretResponse.value();
     //Update the expiry time of the secret.
     secret.expires(OffsetDateTime.now().plusYears(2));
-    secretAsyncClient.updateSecret(secret).subscribe(secretResponse ->
-         System.out.printf("Secret's updated expiry time %s \n", secretResponse.value().notBefore().toString()));
+    secretAsyncClient.updateSecret(secret).subscribe(updatedSecretResponse ->
+         System.out.printf("Secret's updated expiry time %s \n", updatedSecretResponse.value().notBefore().toString()));
 });
-
 
 ```
 
@@ -199,12 +198,3 @@ secretAsyncClient.deleteSecret("EventhubsAccountKey").subscribe(deletedSecretRes
    System.out.printf("Deleted Secret's Recovery Id %s \n", deletedSecretResponse.value().recoveryId()));
 
 ```
-
-## Points of Discussion
-
-    * Response<T> vs T
-
-    * Base naming Pattern - Rename SecretAttributes to SecretBase.
-    
-    * Response.value().value() vs Response.<insert-name-here>.value()
-

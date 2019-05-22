@@ -107,7 +107,7 @@ System.out.printf("Key is created with name %s and value %s \n", createdKey.name
 
 ```
 
-### 3. Given a key named "myRsaHsmKey" whose expiry got changed to 2 years from today and needs to perform Sign and Verify operations, update it in key vault.
+### 3. Given a key named "myRsaHsmKey" whose expiry got changed to 2 years from today, update it in key vault.
 ```java
 
 KeyClient keyClient = KeyClient.builder()
@@ -201,12 +201,3 @@ keyAsyncClient.deleteKey("EventhubsAccountKey").subscribe(deletedKeyResponse ->
    System.out.printf("Deleted Key's Recovery Id %s \n", deletedKeyResponse.value().recoveryId()));
 
 ```
-
-## Points of Discussion
-
-    * Response<T> vs T
-
-    * Base naming Pattern - Rename SecretAttributes to SecretBase.
-    
-    * Response.value().value() vs Response.<insert-name-here>.value()
-

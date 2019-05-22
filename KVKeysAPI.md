@@ -13,7 +13,7 @@ public class KeyAsyncClient extends ServiceClient
     public Mono<Response<Key>> getKey(String name);
     public Mono<Response<Key>> getKey(String name, String version);
     
-    public Mono<Response<Key>> createKey(String name, JsonWebKeyType keyType);
+    public Mono<Response<Key>> createKey(String name, KeyType keyType);
     public Mono<Response<Key>> createECKey(ECKeyCreateConfig ecKeyCreateConfig);
     public Mono<Response<Key>> createRSAKey(RSAKeyCreateConfig rsaKeyCreateConfig);
     
@@ -23,7 +23,7 @@ public class KeyAsyncClient extends ServiceClient
     
     public Mono<Response<Key>> updateKey(KeyBase key);
     
-    public Mono<Response<Key>> importKey(String name, JsonWebKey key);
+    public Mono<Response<Key>> importKey(String name, KeyMaterial keyMaterial);
     public Mono<Response<Key>> importKey(KeyImportConfig keyImportConfig);
 
     public Mono<Response<DeletedKey>> deleteKey(String name);
@@ -51,7 +51,7 @@ public class KeyClient extends ServiceClient
     public Response<Key> getKey(String name);
     public Response<Key> getKey(String name, String version);
     
-    public Response<Key> createKey(String name, JsonWebKeyType keyType);
+    public Response<Key> createKey(String name, KeyType keyType);
     public Response<Key> createECKey(ECKeyCreateConfig ecKeyCreateConfig);
     public Response<Key> createRSAKey(RSAKeyCreateConfig rsaKeyCreateConfig);
     
@@ -61,7 +61,7 @@ public class KeyClient extends ServiceClient
     
     public Response<Key> updateKey(KeyBase key);
     
-    public Response<Key> importKey(String name, JsonWebKey key);
+    public Response<Key> importKey(String name, KeyMaterial key);
     public Response<Key> importKey(KeyImportConfig keyImportConfig);
 
     public Response<DeletedKey> deleteKey(String name);
@@ -85,7 +85,7 @@ KeyClient keyClient = KeyClient.builder()
                             .credentials(AzureCredential.DEFAULT)
                             .build();
 
- Key key = keyClient.createKey("firstKey", JsonWebKeyType.EC).value();
+ Key key = keyClient.createKey("firstKey", KeyType.EC).value();
  System.out.printf("Key is created with name %s and id %s \n", key.name(), key.id());
 
 ```
@@ -98,7 +98,7 @@ KeyClient keyClient = KeyClient.builder()
                             .credentials(AzureCredential.DEFAULT)
                             .build();
                             
-Key createdKey = keyClient.createRSAKey(new RSAKeyCreateConfig("myRsaHsmKey", JsonWebKeyType.RSA_HSM)
+Key createdKey = keyClient.createRSAKey(new RSAKeyCreateConfig("myRsaHsmKey", KeyType.RSA_HSM)
         .expires(OffsetDateTime.now().plusYears(1))
         .keySize(2048))
         .value();
@@ -146,7 +146,7 @@ KeyAsyncClient keyAsyncClient = KeyAsyncClient.builder()
                             .credentials(AzureCredential.DEFAULT)
                             .build();
 
-keyAsyncClient.createKey("firstKey", JsonWebKeyType.EC).subscribe(keyResponse ->
+keyAsyncClient.createKey("firstKey", KeyType.EC).subscribe(keyResponse ->
    System.out.printf("Key is created with name %s and id %s \n", keyResponse.value().name(), keyResponse.value().id()));
  
 
@@ -160,15 +160,13 @@ KeyAsyncClient keyAsyncClient = KeyAsyncClient.builder()
                             .credentials(AzureCredential.DEFAULT)
                             .build();
 
-RSAKeyCreateConfig rsaKeyConfig = new RSAKeyCreateConfig("myRsaHsmKey", JsonWebKeyType.RSA_HSM)
+RSAKeyCreateConfig rsaKeyConfig = new RSAKeyCreateConfig("myRsaHsmKey", KeyType.RSA_HSM)
                                       .expires(OffsetDateTime.now().plusYears(1))
                                       .keySize(2048);
 
 keyAsyncClient.createRSAKey(rsaKeyConfig).subscribe(keyResponse ->
    System.out.printf("Key is created with name %s and id %s \n", keyResponse.value().name(), keyResponse.value().id()));
  
-
-
 ```
 
 ### 3. Given a key named "myRsaHsmKey" whose expiry got changed to 2 years from today, update it in key vault.

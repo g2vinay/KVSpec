@@ -50,7 +50,7 @@ public class CertificateAsyncClient extends ServiceClient
     public Mono<Response<CertificateBase>> getCertificatePolicy(String certificateName);
     public Mono<Response<CertificateBase>> updateCertificatePolicy(String certificateName, CertificateBase certificate);
       
-    // Possibles renames to:
+    // Possibles renames to:  (Using this for now)
     public Mono<Response<CertificateBase>> getCertificateProperties(String certificateName);
     public Mono<Response<CertificateBase>> updateCertificateProperties(CertificateBase certificate);
    
@@ -90,7 +90,7 @@ public final class CertificateAsyncClientBuilder {
        //Validate and Build the Client
     }
 
-    public CertificateAsyncClientBuilder vaultEndpoint(String vaultEndpoint) {}
+    public CertificateAsyncClientBuilder endpoint(String vaultEndpoint) {}
     public CertificateAsyncClientBuilder credentials(ServiceClientCredentials credentials) {}
     public CertificateAsyncClientBuilder httpLogDetailLevel(HttpLogDetailLevel logLevel) {}
     public CertificateAsyncClientBuilder addPolicy(HttpPipelinePolicy policy) {}
@@ -489,7 +489,7 @@ public abstract class KeyConfiguration {
 
 public class RSAKeyConfiguration extends KeyConfiguration {
 
-    public void keySize(Integer keySize);
+    public RSAKeyConfiguration keySize(Integer keySize);
     
     // Add setters for other variables.
 }
@@ -497,7 +497,7 @@ public class RSAKeyConfiguration extends KeyConfiguration {
 
 public class ECKeyConfiguration extends KeyConfiguration {
 
-    private ECKeyConfiguration KeyCurve(JsonWebKeyCurve keyCurve);
+    public ECKeyConfiguration KeyCurve(JsonWebKeyCurve keyCurve);
     
     // Add setters for other variables.
 
@@ -505,7 +505,6 @@ public class ECKeyConfiguration extends KeyConfiguration {
 
 
 }
-
 
 public class CertificateOperation {
     /**
@@ -540,7 +539,7 @@ public class CertificateOperation {
      * certificate operation.
      */
     @JsonProperty(value = "csr")
-    private byte[] csr;
+    private byte[] certificateSigningRequest;
 
     /**
      * Indicates if cancellation was requested on the certificate operation.

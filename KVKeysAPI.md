@@ -197,7 +197,7 @@ KeyAsyncClient keyAsyncClient = SecretAsyncClient.builder()
                             .credentials(AzureCredential.DEFAULT)
                             .build();
 
-keyAsyncClient.deleteKey("EventhubsAccountKey").subscribe(deletedKeyResponse ->
+keyAsyncClient.deleteKey("myTwitterECKey").subscribe(deletedKeyResponse ->
    System.out.printf("Deleted Key's Recovery Id %s \n", deletedKeyResponse.value().recoveryId()));
 
 ```

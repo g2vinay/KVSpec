@@ -5,7 +5,7 @@
 
 ![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign2.png)
 
-
+![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign3.png)
 
 
 ## Points of Discussion

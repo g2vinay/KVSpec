@@ -43,8 +43,7 @@ public class CertificateAsyncClient extends ServiceClient
     public Flux<DeletedCertificate> listDeletedCertificates();
     
     //Update works to only update tags and enabled attrbiutes.    
-    public Mono<Response<Certificate>> updateCertificateTags(String certificateName, Map<String, String> tags);
-    public Mono<Response<Certificate>> updateCertificateEnabled(String certificateName, boolean enabled);
+    public Mono<Response<Certificate>> updateCertificate(CertificateBase certificateBase);
 
     public Mono<Response<DeletedCertificate>> deleteCertificate(String name);
     public Mono<Response<DeletedCertificate>> getDeletedCertificate(String name);

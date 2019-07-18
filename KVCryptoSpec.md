@@ -33,20 +33,20 @@ public class KeyAsyncClient extends ServiceClient
 public class KeyClient extends ServiceClient
 {
     // methods
-    public Mono<Response<byte[]>> sign(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> sign(KeyBase key, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
-    public Mono<Response<Boolean>> verify(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
-    public Mono<Response<Boolean>> verify(KeyBase key, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
+    public Response<byte[]> sign(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
+    public Response<byte[]> sign(KeyBase key, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
+    public Response<Boolean> verify(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
+    public Response<Boolean> verify(KeyBase key, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
     
-    public Mono<Response<byte[]>> wrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> wrapKey(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> unwrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> unwrapKey(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> wrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> wrapKey(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> unwrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> unwrapKey(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
 
-    public Mono<Response<byte[]>> encrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> encrypt(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> decrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
-    public Mono<Response<byte[]>> decrypt(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> encrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> encrypt(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> decrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> decrypt(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
     
 }
 

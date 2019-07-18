@@ -1,8 +1,15 @@
 ## __KeyAsyncClient__
+
+### Possible Upgrades/Changes:
+Track 1 supports passing in keyId to the API and it works cross vaults.
+Track 2 clients are tied to vaults.
+So, there is a possibility of a new 'KeyCryptographyClient' which will support passing in KeyId to the API.
+
 ~~~ java
 public class KeyAsyncClient extends ServiceClient
 {
-    // methods
+    // methods 
+    
     public Mono<Response<byte[]>> sign(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
     public Mono<Response<byte[]>> sign(KeyBase key, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
     public Mono<Response<Boolean>> verify(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
@@ -19,10 +26,6 @@ public class KeyAsyncClient extends ServiceClient
     public Mono<Response<byte[]>> decrypt(KeyBase key, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
 }
 
-### Possible Upgrades/Changes:
-Track 1 supports passing in keyId to the API and it works cross vaults.
-Track 2 clients are tied to vaults.
-So, there is a possibility of a new 'KeyCryptographyClient' which will support passing in KeyId to the API.
 ~~~
 
 ## __KeyClient__

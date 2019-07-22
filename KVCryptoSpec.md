@@ -1,9 +1,57 @@
 ## __KeyAsyncClient__
 
-### Possible Upgrades/Changes:
-Track 1 supports passing in keyId to the API and it works cross vaults.
+### Using CryptographyClient (Version 1):
+Allow passing Key Identifier to the API.
+
+~~~ java
+public class CryptographyAsyncClient extends ServiceClient
+{
+    // methods 
+    public Mono<Response<byte[]>> sign(String keyId, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> sign(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
+    
+    public Mono<Response<Boolean>> verify(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
+    public Mono<Response<Boolean>> verify(String keyId, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
+    
+    public Mono<Response<byte[]>> wrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> wrapKey(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> unwrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> unwrapKey(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+
+    public Mono<Response<byte[]>> encrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> encrypt(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> decrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Mono<Response<byte[]>> decrypt(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+}
+
+
+~~~ java
+public class CryptographyClient extends ServiceClient
+{
+    // methods
+    public Response<byte[]> sign(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
+    public Response<byte[]> sign(String keyId, KeySignatureAlgorithm signatureAlgorithm, byte[] value);
+    public Response<Boolean> verify(String name, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
+    public Response<Boolean> verify(KeyBase key, KeySignatureAlgorithm signatureAlgorithm, byte[] digest, byte[] signature);
+    
+    public Response<byte[]> wrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> wrapKey(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> unwrapKey(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> unwrapKey(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+
+    public Response<byte[]> encrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> encrypt(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> decrypt(String name, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    public Response<byte[]> decrypt(String keyId, KeyEncryptionAlgorithm encryptionAlgorithm, byte[] value);
+    
+}
+
+
+
+
+
+### Version 2:
 Track 2 clients are tied to vaults.
-So, there is a possibility of a new 'KeyCryptographyClient' which will support passing in KeyId to the API.
 
 ~~~ java
 public class KeyAsyncClient extends ServiceClient

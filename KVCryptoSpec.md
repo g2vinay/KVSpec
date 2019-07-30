@@ -6,9 +6,12 @@ public class CryptographyClient extends ServiceClient
     // methods - async
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext);
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, InputStream plaintext);
+    
+    //Which of these two gets WithResponse overload? -- applies to signAsync and wrapAsync too.
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv, byte[] authenticationData);
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, InputStream plaintext, byte[] iv, byte[] authenticationData);
     
+    // Cannot have with Response as out REST API response gets unpacked and byte[] is returned
     public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, byte[] cipherText);
     public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, InputStream cipherText);
     public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, byte[] cipherText, byte[] iv, byte[] authenticationData);
@@ -57,8 +60,61 @@ public class CryptographyClient extends ServiceClient
     public Boolean verifyData(SignatureAlgorithm algorithm, InputStream data, byte[] signature);
    
 }
-
 ~~~
+
+
+## Scenarios - Sync API
+
+### 1. Sign And Verify
+```java
+CryptographyClient cryptoClient = new CryptographyClientBuilder("<MY-KEY>")
+    .credentials(new DefaultAzureCredential())
+    .buildClient();
+                            
+byte[] plainText = new byte[100];
+new Random(0x1234567L).nextBytes(plainText);
+MessageDigest md = MessageDigest.getInstance("SHA-256");
+md.update(plainText);
+byte[] digest = md.digest();
+
+byte[] signature = cryptoClient.sign(SignatureAlgorithm.RS256, digest).signature();
+boolean verifyStatus = cryptoClient.verify(SignatureAlgorithm.RS256, digest, signature);
+
+```
+
+### 2. Encrypt And Decrypt
+```java
+CryptographyClient cryptoClient = new CryptographyClientBuilder("<MY-KEY>")
+    .credentials(new DefaultAzureCredential())
+    .buildClient();
+                            
+byte[] plainText = new byte[100];
+new Random(0x1234567L).nextBytes(plainText);
+
+
+// Encrypt in the service.
+byte[] cipherText =  cryptoClient.encrypt(EncryptionAlgorithm.RSA_OAEP, plainText).cipherText();
+
+byte[] decryptedText =  cryptoClient.decrypt(EncryptionAlgorithm.RSA_OAEP, cipherText);
+
+```
+
+### 2. Wrap And Unwrap
+```java
+CryptographyClient cryptoClient = new CryptographyClientBuilder("<MY-KEY>")
+    .credentials(new DefaultAzureCredential())
+    .buildClient();
+                            
+byte[] plainText = new byte[100];
+new Random(0x1234567L).nextBytes(plainText);
+
+// wrap and unwrap using kid WO version
+byte[] encryptedkey = cryptoClient.wrapKey(KeyWrapAlgorithm.RSA_OAEP, plainText).encryptedKey();
+
+byte[] unwrappedKey = cryptoClient.unwrapKey(KeyWrapAlgorithm.RSA_OAEP, encryptedkey);
+```
+
+
 
 ### DataStructures
 ~~~ java
@@ -238,58 +294,6 @@ public class KeyWrapResult {
 }
 
 ~~~
-
-## Scenarios - Sync API
-
-### 1. Sign And Verify
-```java
-CryptographyClient cryptoClient = new CryptographyClientBuilder("<MY-KEY>")
-    .credentials(new DefaultAzureCredential())
-    .buildClient();
-                            
-byte[] plainText = new byte[100];
-new Random(0x1234567L).nextBytes(plainText);
-MessageDigest md = MessageDigest.getInstance("SHA-256");
-md.update(plainText);
-byte[] digest = md.digest();
-
-byte[] signature = cryptoClient.sign(SignatureAlgorithm.RS256, digest).signature();
-boolean verifyStatus = cryptoClient.verify(SignatureAlgorithm.RS256, digest, signature);
-
-```
-
-### 2. Encrypt And Decrypt
-```java
-CryptographyClient cryptoClient = new CryptographyClientBuilder("<MY-KEY>")
-    .credentials(new DefaultAzureCredential())
-    .buildClient();
-                            
-byte[] plainText = new byte[100];
-new Random(0x1234567L).nextBytes(plainText);
-
-
-// Encrypt in the service.
-byte[] cipherText =  cryptoClient.encrypt(EncryptionAlgorithm.RSA_OAEP, plainText).cipherText();
-
-byte[] decryptedText =  cryptoClient.decrypt(EncryptionAlgorithm.RSA_OAEP, cipherText);
-
-```
-
-### 2. Wrap And Unwrap
-```java
-CryptographyClient cryptoClient = new CryptographyClientBuilder("<MY-KEY>")
-    .credentials(new DefaultAzureCredential())
-    .buildClient();
-                            
-byte[] plainText = new byte[100];
-new Random(0x1234567L).nextBytes(plainText);
-
-// wrap and unwrap using kid WO version
-byte[] encryptedkey = cryptoClient.wrapKey(KeyWrapAlgorithm.RSA_OAEP, plainText).encryptedKey();
-
-byte[] unwrappedKey = cryptoClient.unwrapKey(KeyWrapAlgorithm.RSA_OAEP, encryptedkey);
-```
-
 
 
 

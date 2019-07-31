@@ -1,37 +1,38 @@
 ## __CryptographyClient__
 
 ~~~ java
-public class CryptographyClient extends ServiceClient
-{
-    // methods - async
-    public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext);
-    public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, InputStream plaintext);
+public class CryptographyAsyncClient {
+
+    public Mono<EncryptResult> encrypt(EncryptionAlgorithm algorithm, byte[] plaintext);
+    public Mono<EncryptResult> encrypt(EncryptionAlgorithm algorithm, InputStream plaintext);
     
     //Which of these two gets WithResponse overload? -- applies to decrypt too.
-    public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv, byte[] authenticationData);
-    public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, InputStream plaintext, byte[] iv, byte[] authenticationData);
+    public Mono<EncryptResult> encrypt(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv, byte[] authenticationData);
+    public Mono<EncryptResult> encrypt(EncryptionAlgorithm algorithm, InputStream plaintext, byte[] iv, byte[] authenticationData);
     
-    public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, byte[] cipherText);
-    public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, InputStream cipherText);
-    public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, byte[] cipherText, byte[] iv, byte[] authenticationData);
-    public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, InputStream cipherText, byte[] iv, byte[] authenticationData);
+    public Mono<byte[]> decrypt(EncryptionAlgorithm algorithm, byte[] cipherText);
+    public Mono<byte[]> decrypt(EncryptionAlgorithm algorithm, InputStream cipherText);
+    public Mono<byte[]> decrypt(EncryptionAlgorithm algorithm, byte[] cipherText, byte[] iv, byte[] authenticationData);
+    public Mono<byte[]> decrypt(EncryptionAlgorithm algorithm, InputStream cipherText, byte[] iv, byte[] authenticationData);
     
-    public Mono<SignResult> signAsync(SignatureAlgorithm algorithm, byte[] digest);
+    public Mono<SignResult> sign(SignatureAlgorithm algorithm, byte[] digest);
 
-    public Mono<Boolean> verifyAsync(SignatureAlgorithm algorithm, byte[] digest, byte[] signature);
+    public Mono<Boolean> verify(SignatureAlgorithm algorithm, byte[] digest, byte[] signature);
     
-    public Mono<KeyWrapResult> wrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] key);
+    public Mono<KeyWrapResult> wrapKey(KeyWrapAlgorithm algorithm, byte[] key);
     
-    public Mono<byte[]> unwrapKeyAsync(KeyWrapAlgorithm algorithm, byte[] encryptedKey);
+    public Mono<byte[]> unwrapKey(KeyWrapAlgorithm algorithm, byte[] encryptedKey);
     
 
-    public Mono<SignResult> signDataAsync(SignatureAlgorithm algorithm, byte[] data);
-    public Mono<SignResult> signDataAsync(SignatureAlgorithm algorithm, InputStream data);
+    public Mono<SignResult> signData(SignatureAlgorithm algorithm, byte[] data);
+    public Mono<SignResult> signData(SignatureAlgorithm algorithm, InputStream data);
     
-    public Mono<Boolean> verifyDataAsync(SignatureAlgorithm algorithm, byte[] data, byte[] signature);
-    public Mono<Boolean> verifyDataAsync(SignatureAlgorithm algorithm, InputStream data, byte[] signature);
-    
-    
+    public Mono<Boolean> verifyData(SignatureAlgorithm algorithm, byte[] data, byte[] signature);
+    public Mono<Boolean> verifyData(SignatureAlgorithm algorithm, InputStream data, byte[] signature);
+   
+}
+
+public class CryptographyClient {
     
     // methods - sync
     public EncryptResult encrypt(EncryptionAlgorithm algorithm, byte[] plaintext);
@@ -57,8 +58,9 @@ public class CryptographyClient extends ServiceClient
 
     public Boolean verifyData(SignatureAlgorithm algorithm, byte[] data, byte[] signature);
     public Boolean verifyData(SignatureAlgorithm algorithm, InputStream data, byte[] signature);
-   
 }
+
+
 ~~~
 
 

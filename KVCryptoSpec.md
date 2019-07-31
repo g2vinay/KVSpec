@@ -7,11 +7,10 @@ public class CryptographyClient extends ServiceClient
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext);
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, InputStream plaintext);
     
-    //Which of these two gets WithResponse overload? -- applies to signAsync and wrapAsync too.
+    //Which of these two gets WithResponse overload? -- applies to decrypt too.
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, byte[] plaintext, byte[] iv, byte[] authenticationData);
     public Mono<EncryptResult> encryptAsync(EncryptionAlgorithm algorithm, InputStream plaintext, byte[] iv, byte[] authenticationData);
     
-    // Cannot have with Response as out REST API response gets unpacked and byte[] is returned
     public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, byte[] cipherText);
     public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, InputStream cipherText);
     public Mono<byte[]> decryptAsync(EncryptionAlgorithm algorithm, byte[] cipherText, byte[] iv, byte[] authenticationData);

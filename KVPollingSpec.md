@@ -17,6 +17,8 @@ public class CertificateAsyncClient extends ServiceClient
     
     public Mono<Response<CertificateOperation>> cancelCertificateOperation(String certificateName);
     public Mono<Response<CertificateOperation>> deleteCertificateOperation(String certificateName);
+    
+    //This can potentially be removed
     public Mono<Response<CertificateOperation>> getCertificateOperation(String certificateName);
 }
 ~~~
@@ -33,6 +35,8 @@ public class CertificateClient extends ServiceClient
     
     public Response<CertificateOperation> cancelCertificateOperation(String certificateName);
     public Response<CertificateOperation> deleteCertificateOperation(String certificateName);
+    
+    // This can potentially be removed.
     public Response<CertificateOperation> getCertificateOperation(String certificateName); 
 }
 ~~~

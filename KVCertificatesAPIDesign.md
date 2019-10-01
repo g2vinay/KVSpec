@@ -1,5 +1,15 @@
 # Azure KeyVault Certificates API Design
 
+## Certifciates Datastructures Design
+
+![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign4.png)
+
+![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign5.png)
+
+![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign6.png)
+
+
+
 ## Scenario - Create Certificate
 
 ### Java

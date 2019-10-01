@@ -194,7 +194,7 @@ public Response<CertificatePolicy> updateCertificatePolicyWithResponse(String ce
 ### .NET
 ```c#
 public virtual Response<CertificatePolicy> UpdateCertificatePolicy(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
-                public virtual async Task<Response<CertificatePolicy>> UpdateCertificatePolicyAsync(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
+public virtual async Task<Response<CertificatePolicy>> UpdateCertificatePolicyAsync(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
 
 
 ```
@@ -380,7 +380,6 @@ public Response<Certificate> restoreCertificateWithResponse(byte[] backup, Conte
 ```c#
 public virtual Response<CertificateWithPolicy> RestoreCertificate(byte[] backup, CancellationToken cancellationToken = default)
 public virtual async Task<Response<CertificateWithPolicy>> RestoreCertificateAsync(byte[] backup, CancellationToken cancellationToken = default)
-
 ```
 ### Python
 ```python
@@ -463,7 +462,6 @@ public PagedIterable<DeletedCertificate> listDeletedCertificates(Context context
 ```c#
 public virtual IEnumerable<Response<DeletedCertificate>> GetDeletedCertificates(CancellationToken cancellationToken = default)
 public virtual IAsyncEnumerable<Response<DeletedCertificate>> GetDeletedCertificatesAsync(CancellationToken cancellationToken = default)
-
 ```
 ### Python
 ```python
@@ -564,8 +562,6 @@ public Issuer deleteIssuer(String name);
 ```c#
 public virtual Response<Issuer> DeleteIssuer(string name, CancellationToken cancellationToken = default)
 public virtual async Task<Response<Issuer>> DeleteIssuerAsync(string name, CancellationToken cancellationToken = default)
-
-
 ```
 ### Python
 ```python
@@ -596,7 +592,6 @@ public PagedIterable<IssuerPropeties> listIssuers(Context context);
 ```c#
 public virtual IEnumerable<Response<IssuerProperties>> GetIssuers(CancellationToken cancellationToken = default)
 public virtual IAsyncEnumerable<Response<IssuerProperties>> GetIssuersAsync(CancellationToken cancellationToken = default)
-
 ```
 ### Python
 ```python
@@ -626,7 +621,6 @@ public Response<Issuer> updateIssuerWithResponse(Issuer issuer, Context context)
 ```c#
 public virtual Response<Issuer> UpdateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
 public virtual async Task<Response<Issuer>> UpdateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
-
 ```
 ### Python
 ```python
@@ -664,8 +658,6 @@ Question: Do we need this, if we have LRO/Poller support ?
 ```c#
 public virtual CertificateOperation GetCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
 public virtual async Task<CertificateOperation> GetCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
-
-
 ```
 ### Python
 ```python
@@ -722,8 +714,6 @@ public Response<CertificateOperation> deleteCertificateOperation(String certific
 ```c#
 public virtual CertificateOperation DeleteCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
 public virtual async Task<CertificateOperation> DeleteCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
-
-
 ```
 ### Python
 ```python
@@ -745,8 +735,6 @@ Question: JS uses Certificate in middle ?
 ```java
 public PagedFlux<Contact> setContacts(List<Contact> contacts);
 
-
-
 public PagedIterable<Contact> setContacts(List<Contact> contacts);
 public PagedIterable<Contact> setContacts(List<Contact> contacts, Context context);
 ```
@@ -755,8 +743,6 @@ public PagedIterable<Contact> setContacts(List<Contact> contacts, Context contex
 ```c#
 public virtual Response<IList<Contact>> SetContacts(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
 public virtual async Task<Response<IList<Contact>>> SetContactsAsync(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
-
-
 ```
 ### Python
 ```python
@@ -808,7 +794,6 @@ public PagedIterable<Contact> deleteContacts(Context context);
 ```c#
 public virtual Response<IList<Contact>> DeleteContacts(CancellationToken cancellationToken = default)
 public virtual async Task<Response<IList<Contact>>> DeleteContactsAsync(CancellationToken cancellationToken = default)
-
 ```
 ### Python
 ```python
@@ -904,7 +889,6 @@ public Response<Certificate> importCertificate(CertificateImport certificateImpo
 ```c#
 public virtual Response<CertificateWithPolicy> ImportCertificate(CertificateImport import, CancellationToken cancellationToken = default)
 public virtual async Task<Response<CertificateWithPolicy>> ImportCertificateAsync(CertificateImport import, CancellationToken cancellationToken = default)
-
 ```
 ### Python
 ```python

@@ -109,7 +109,6 @@ public Mono<Response<CertificatePolicy>> getCertificatePolicyWithResponse(String
             
 public CertificatePolicy getCertificatePolicy(String name);
 public Response<CertificatePolicy> getCertificatePolicyWithResponse(String name, Context context);
-
 ```
 
 ### .NET
@@ -483,7 +482,7 @@ Question: JS calls it set Certificate Issuer.
 ### Java
 ```java
 public Mono<Issuer> createIssuer(String name, String provider);
-public Mono<Issuer> createssuer(Issuer issuer);
+public Mono<Issuer> createIssuer(Issuer issuer);
 public Mono<Response<Issuer>> createIssuerWithResponse(Issuer issuer);
             
 public Issuer createIssuer(String name, String provider);
@@ -553,7 +552,7 @@ public virtual async Task<Response<Issuer>> GetIssuerAsync(string name, Cancella
 Question: JS uses Delete Certificate
 ### Java
 ```java
-public Mono<Response<Issuer>> deletessuerWithResponse(String name);
+public Mono<Response<Issuer>> deleteIssuerWithResponse(String name);
 public Mono<Issuer> deleteIssuer(String name);
 
 

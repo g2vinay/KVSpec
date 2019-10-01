@@ -1,39 +1,31 @@
 # Azure KeyVault Certificates API Design
 
+Azure Key Vault is a cloud service that provides secure storage and automated management of certificates used throughout a cloud application. Multiple certificate, and multiple versions of the same certificate, can be kept in the Key Vault. Each certificate in the vault has a policy associated with it which controls the issuance and lifetime of the certificate, along with actions to be taken as certificates near expiry.
+
+The Azure Key Vault Certificate client library enables programmatically managing certificates, offering methods to create, update, list, and delete certificates, policies, issuers, and contacts. The library also supports managing pending certificate operations and management of deleted certificates.
+
 ## Certifciates Datastructures Design
 
-![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign4.png)
+![](https://github.com/g2vinay/KVSpec/blob/master/CertsDesign4.png)
 
-![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign5.png)
+![](https://github.com/g2vinay/KVSpec/blob/master/CertsDesign5.png)
 
-![](https://github.com/g2vinay/KVSpec/blob/master/certsDesign6.png)
+![](https://github.com/g2vinay/KVSpec/blob/master/CertsDesign6.png)
 
 
 
 ## Scenario - Create Certificate
-
+Question: Do All languages return Certificate when operation completes?
 ### Java
 ```java
-Poller<CertificateOperation> createCertificate(String name, CertificatePolicy policy, Map<String, String> tags);
-Poller<CertificateOperation> createCertificate(String name, CertificatePolicy policy);
-
-CertificatePolicy policy = new CertificatePolicy("Self", "CN=SelfSignedJavaPkcs12");
-Map<String, String> tags = new HashMap<>();
-tags.put("foo", "bar");
-//Creates a certificate and polls on its progress.
-certificateAsyncClient.createCertificate("certificateName", policy, tags)
-    .getObserver()
-    .subscribe(pollResponse -> {
-        System.out.println("---------------------------------------------------------------------------------");
-        System.out.println(pollResponse.getStatus());
-        System.out.println(pollResponse.getValue().status());
-        System.out.println(pollResponse.getValue().statusDetails());
-    });
+Poller<CertificateOperation, Certificate> createCertificate(String name, CertificatePolicy policy);
+Poller<CertificateOperation, Certificate> createCertificate(String name, CertificatePolicy policy, Map<String, String> tags);
+Poller<CertificateOperation, Certificate> createCertificate(String name, CertificatePolicy policy, boolean enabled, Map<String, String> tags);
 
 ```
 
 ### .NET
-```net
+```c#
 public virtual CertificateOperation StartCreateCertificate(string name, CancellationToken cancellationToken = default);
 public virtual CertificateOperation StartCreateCertificate(string name, CertificatePolicy policy, bool? enabled = default, IDictionary<string, string> tags = default, CancellationToken cancellationToken = default);
 
@@ -69,30 +61,20 @@ public virtual async Task<CertificateOperation> StartCreateCertificateAsync(stri
 ```java
 // Async API
 public Mono<Certificate> getCertificateWithPolicy(String name);
-public Mono<Certificate> getCertificate(CertificateBase certificateBase);
+public Mono<Certificate> getCertificate(CertificateProperties certificateProperties);
 public Mono<Certificate> getCertificate(String name, String version);
 public Mono<Response<Certificate>> getCertificateWithResponse(String name, String version);
 
-certificateAsyncClient.getCertificateWithPolicy("certificateName")
-    .subscribe(certificateResponse ->
-        System.out.printf("Certificate is returned with name %s and secretId %s %n", certificateResponse.name(),
-            certificateResponse.secretId()));
 
 //Sync API
 public Certificate getCertificateWithPolicy(String name);
 public Certificate getCertificate(CertificateProperties certificateProperties);
 public Certificate getCertificate(String name, String version);
 public Response<Certificate> getCertificateWithResponse(String name, String version, Context context);
-
-Certificate certificate = certificateClient.getCertificateWithPolicy("certificateName");
-System.out.printf("Recevied certificate with name %s and version %s and secret id", certificate.name(),
-    certificate.version(), certificate.secretId());
-
-
 ```
 
 ### .NET
-```net
+```c#
 public virtual Response<CertificateWithPolicy> GetCertificateWithPolicy(string name, CancellationToken cancellationToken = default)
 public virtual async Task<Response<CertificateWithPolicy>> GetCertificateWithPolicyAsync(string name, CancellationToken cancellationToken = default)
 public virtual Response<Certificate> GetCertificate(string name, string version, CancellationToken cancellationToken = default)
@@ -100,10 +82,8 @@ public virtual async Task<Response<Certificate>> GetCertificateAsync(string name
 ```
 ### Python
 ```python
-    def get_certificate(self, name, version, **kwargs):
-        def get_certificate_with_policy(self, name, **kwargs)
-
-
+def get_certificate(self, name, version, **kwargs):
+def get_certificate_with_policy(self, name, **kwargs)
 ```
 ### JS/TS
 ```javascript
@@ -126,32 +106,22 @@ public virtual async Task<Response<Certificate>> GetCertificateAsync(string name
 public Mono<CertificatePolicy> getCertificatePolicy(String name);
 public Mono<Response<CertificatePolicy>> getCertificatePolicyWithResponse(String name);
 
-certificateAsyncClient.getCertificatePolicy("certificateName")
-    .subscriberContext(Context.of(key1, value1, key2, value2))
-    .subscribe(policy ->
-        System.out.printf("Certificate policy is returned with issuer name %s and subject name %s %n",
-            policy.issuerName(), policy.subjectName()));
             
 public CertificatePolicy getCertificatePolicy(String name);
 public Response<CertificatePolicy> getCertificatePolicyWithResponse(String name, Context context);
 
-Response<CertificatePolicy> returnedPolicyWithResponse = certificateClient.getCertificatePolicyWithResponse(
-    "certificateName", new Context(key1, value1));
-System.out.printf("Received policy with subject name %s", returnedPolicyWithResponse.getValue().subjectName());
 ```
 
 ### .NET
-```net
-
-        public virtual Response<CertificatePolicy> GetCertificatePolicy(string certificateName, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<CertificatePolicy>> GetCertificatePolicyAsync(string certificateName, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<CertificatePolicy> GetCertificatePolicy(string certificateName, CancellationToken cancellationToken = default)
+public virtual async Task<Response<CertificatePolicy>> GetCertificatePolicyAsync(string certificateName, CancellationToken cancellationToken = default)
 
 
 ```
 ### Python
 ```python
         def get_policy(self, name, **kwargs):
-
 ```
 ### JS/TS
 ```ts
@@ -162,40 +132,28 @@ System.out.printf("Received policy with subject name %s", returnedPolicyWithResp
 ```
 
 ## Scenario - Update Certificate
-
+Question: Updating Certificate via Properties vs setting fields.
 ### Java
 ```java
-public Mono<Certificate> updateCertificate(CertificateBase certificate);
-public Mono<Response<Certificate>> updateCertificateWithResponse(CertificateBase certificate);
+public Mono<Certificate> updateCertificate(String name, Boolean enabled, Map<String, String> tags);
+public Mono<Certificate> updateCertificate(String name, Map<String, String> tags);
+public Mono<Certificate> updateCertificate(String name, Boolean enabled);
+public Mono<Certificate> updateCertificate(String name, String version, Boolean enabled, Map<String, String> tags);
+public Mono<Certificate> updateCertificate(String name, String version, Map<String, String> tags);
+public Mono<Certificate> updateCertificate(String name, String version, Boolean enabled, Map<String, String> tags);
+public Mono<Response<Certificate>> updateCertificate(String name, String version, Boolean enabled, Map<String, String> tags);
 
-certificateAsyncClient.getCertificateWithPolicy("certificateName")
-    .subscriberContext(Context.of(key1, value1, key2, value2))
-    .subscribe(certificateResponseValue -> {
-        Certificate certificate = certificateResponseValue;
-        //Update enabled status of the certificate
-        certificate.enabled(false);
-        certificateAsyncClient.updateCertificate(certificate)
-            .subscribe(certificateResponse ->
-                System.out.printf("Certificate's enabled status %s %n",
-                    certificateResponse.enabled().toString()));
-    });
+
+public Mono<Certificate> updateCertificateProperties(CertificateProperties certificateProperties);
+public Mono<Response<Certificate>> updateCertificatePropertiesWithResponse(CertificateProperties certificateProperties);
     
 public Certificate updateCertificate(CertificateBase certificate);
 public Response<Certificate> updateCertificateWithResponse(CertificateBase certificate, Context context);
 
-Certificate certificate = certificateClient.getCertificateWithPolicy("certificateName");
-Map<String, String> tags = new HashMap<>();
-tags.put("foo", "bar");
-// Update certificate enabled status
-certificate.enabled(false);
-Certificate updatedCertificate = certificateClient.updateCertificate(certificate);
-System.out.printf("Updated Certificate with name %s and enabled status %s", updatedCertificate.name(),
-    updatedCertificate.enabled());
-
 ```
 
 ### .NET
-```net
+```c#
 public virtual Response<Certificate> UpdateCertificate(string name, string version = default, bool enabled = default, IDictionary<string, string> tags = default, CancellationToken cancellationToken = default);
 
 public virtual async Task<Response<Certificate>> UpdateCertificateAsync(string name, string version = default, bool enabled = default, IDictionary<string, string> tags = default, CancellationToken cancellationToken = default);
@@ -229,34 +187,14 @@ public virtual async Task<Response<Certificate>> UpdateCertificateAsync(string n
 Mono<CertificatePolicy> updateCertificatePolicy(String certificateName, CertificatePolicy policy);
 public Mono<Response<CertificatePolicy>> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy);
 
-certificateAsyncClient.getCertificatePolicy("certificateName")
-    .subscriberContext(Context.of(key1, value1, key2, value2))
-    .subscribe(certificatePolicyResponseValue -> {
-        CertificatePolicy certificatePolicy = certificatePolicyResponseValue;
-        // Update transparency
-        certificatePolicy.certificateTransparency(true);
-        certificateAsyncClient.updateCertificatePolicy("certificateName", certificatePolicy)
-            .subscribe(updatedPolicy ->
-                System.out.printf("Certificate policy's updated transparency status %s %n",
-                    updatedPolicy.certificateTransparency().toString()));
-    });
-
 public CertificatePolicy updateCertificatePolicy(String certificateName, CertificatePolicy policy);
 public Response<CertificatePolicy> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy, Context context);
 
-CertificatePolicy certificatePolicyToUpdate = certificateClient.getCertificatePolicy("certificateName");
-//Update the certificate policy cert transparency property.
-certificatePolicyToUpdate.certificateTransparency(true);
-Response<CertificatePolicy> updatedCertPolicyWithResponse = certificateClient
-    .updateCertificatePolicyWithResponse("certificateName", certificatePolicyToUpdate,
-        new Context(key1, value1));
-System.out.printf("Updated Certificate Policy transparency status %s", updatedCertPolicyWithResponse
-    .getValue().certificateTransparency());
 ```
 
 ### .NET
-```net
-        public virtual Response<CertificatePolicy> UpdateCertificatePolicy(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<CertificatePolicy> UpdateCertificatePolicy(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
                 public virtual async Task<Response<CertificatePolicy>> UpdateCertificatePolicyAsync(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
 
 
@@ -289,7 +227,7 @@ public Response<DeletedCertificate> deleteCertificateWithResponse(String name, C
 ```
 
 ### .NET
-```net
+```c#
 public virtual Response<DeletedCertificate> DeleteCertificate(string name, CancellationToken cancellationToken = default);
 public virtual async Task<Response<DeletedCertificate>> DeleteCertificateAsync(string name, CancellationToken cancellationToken = default);
 
@@ -320,9 +258,9 @@ public Response<DeletedCertificate> getDeletedCertificateWithResponse(String nam
 ```
 
 ### .NET
-```net
-        public virtual Response<DeletedCertificate> GetDeletedCertificate(string name, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<DeletedCertificate>> GetDeletedCertificateAsync(string name, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<DeletedCertificate> GetDeletedCertificate(string name, CancellationToken cancellationToken = default)
+public virtual async Task<Response<DeletedCertificate>> GetDeletedCertificateAsync(string name, CancellationToken cancellationToken = default)
 
 
 ```
@@ -343,13 +281,16 @@ public Response<DeletedCertificate> getDeletedCertificateWithResponse(String nam
 
 ### Java
 ```java
+public Mono<Certificate> recoverDeletedCertificate(String name);
+public Mono<Response<Certificate>> recoverDeletedCertificate(String name);
 
-
+public Certificate recoverDeletedCertificate(String name);
+public Response<Certificate> recoverDeletedCertificate(String name);
 
 ```
 
 ### .NET
-```net
+```c#
 public virtual Response<CertificateWithPolicy> RecoverDeletedCertificate(string name, CancellationToken cancellationToken = default);
 public virtual async Task<Response<CertificateWithPolicy>> RecoverDeletedCertificateAsync(string name, CancellationToken cancellationToken = default);
 ```
@@ -378,7 +319,7 @@ public Response<Void> purgeDeletedCertificateWithResponse(String name, Context c
 ```
 
 ### .NET
-```net
+```c#
 public virtual Response PurgeDeletedCertificate(string name, CancellationToken cancellationToken = default)
 public virtual async Task<Response> PurgeDeletedCertificateAsync(string name, CancellationToken cancellationToken = default)
 
@@ -407,16 +348,13 @@ public Response<byte[]> backupCertificateWithResponse(String name, Context conte
 ```
 
 ### .NET
-```net
-        public virtual Response<byte[]> BackupCertificate(string name, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<byte[]>> BackupCertificateAsync(string name, CancellationToken cancellationToken = default)
-
-
+```c#
+public virtual Response<byte[]> BackupCertificate(string name, CancellationToken cancellationToken = default)
+public virtual async Task<Response<byte[]>> BackupCertificateAsync(string name, CancellationToken cancellationToken = default)
 ```
 ### Python
 ```python
-    def backup_certificate(self, name, **kwargs):
-
+def backup_certificate(self, name, **kwargs):
 ```
 ### JS/TS
 ```ts
@@ -433,16 +371,16 @@ public Response<byte[]> backupCertificateWithResponse(String name, Context conte
 public Mono<Certificate> restoreCertificate(byte[] backup);
 public Mono<Response<Certificate>> restoreCertificateWithResponse(byte[] backup);
         
-        
+     
         
 public Certificate restoreCertificate(byte[] backup);
 public Response<Certificate> restoreCertificateWithResponse(byte[] backup, Context context)
 ```
 
 ### .NET
-```net
-        public virtual Response<CertificateWithPolicy> RestoreCertificate(byte[] backup, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<CertificateWithPolicy>> RestoreCertificateAsync(byte[] backup, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<CertificateWithPolicy> RestoreCertificate(byte[] backup, CancellationToken cancellationToken = default)
+public virtual async Task<Response<CertificateWithPolicy>> RestoreCertificateAsync(byte[] backup, CancellationToken cancellationToken = default)
 
 ```
 ### Python
@@ -461,21 +399,17 @@ public Response<Certificate> restoreCertificateWithResponse(byte[] backup, Conte
 
 ### Java
 ```java
-public PagedFlux<CertificateBase> listCertificates(Boolean includePending);
-public PagedFlux<CertificateBase> listCertificates();
+public PagedFlux<CertificateProperties> listCertificates(Boolean includePending);
+public PagedFlux<CertificateProperties> listCertificates();
 
-
-
-public PagedIterable<CertificateBase> listCertificates();
-public PagedIterable<CertificateBase> listCertificates(boolean includePending, Context context);
-
+public PagedIterable<CertificateProperties> listCertificates();
+public PagedIterable<CertificateProperties> listCertificates(boolean includePending, Context context);
 ```
 
 ### .NET
-```net
-        public virtual IEnumerable<Response<CertificateProperties>> GetCertificates(bool? includePending = default, CancellationToken cancellationToken = default)
-        public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificatesAsync(bool? includePending = default, CancellationToken cancellationToken = default)
-
+```c#
+public virtual IEnumerable<Response<CertificateProperties>> GetCertificates(bool? includePending = default, CancellationToken cancellationToken = default)
+public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificatesAsync(bool? includePending = default, CancellationToken cancellationToken = default)
 ```
 ### Python
 ```python
@@ -492,18 +426,16 @@ public PagedIterable<CertificateBase> listCertificates(boolean includePending, C
 
 ### Java
 ```java
-public PagedFlux<CertificateBase> listCertificateVersions(String name);
+public PagedFlux<CertificateProperties> listCertificateVersions(String name);
 
-public PagedIterable<CertificateBase> listCertificateVersions(String name);
-public PagedIterable<CertificateBase> listCertificateVersions(String name, Context context);
-
+public PagedIterable<CertificateProperties> listCertificateVersions(String name);
+public PagedIterable<CertificateProperties> listCertificateVersions(String name, Context context);
 ```
 
 ### .NET
-```net
-        public virtual IEnumerable<Response<CertificateProperties>> GetCertificateVersions(string name, CancellationToken cancellationToken = default)
-        public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificateVersionsAsync(string name, CancellationToken cancellationToken = default)
-
+```c#
+public virtual IEnumerable<Response<CertificateProperties>> GetCertificateVersions(string name, CancellationToken cancellationToken = default)
+public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificateVersionsAsync(string name, CancellationToken cancellationToken = default)
 ```
 ### Python
 ```python
@@ -529,9 +461,9 @@ public PagedIterable<DeletedCertificate> listDeletedCertificates(Context context
 ```
 
 ### .NET
-```net
-        public virtual IEnumerable<Response<DeletedCertificate>> GetDeletedCertificates(CancellationToken cancellationToken = default)
-        public virtual IAsyncEnumerable<Response<DeletedCertificate>> GetDeletedCertificatesAsync(CancellationToken cancellationToken = default)
+```c#
+public virtual IEnumerable<Response<DeletedCertificate>> GetDeletedCertificates(CancellationToken cancellationToken = default)
+public virtual IAsyncEnumerable<Response<DeletedCertificate>> GetDeletedCertificatesAsync(CancellationToken cancellationToken = default)
 
 ```
 ### Python
@@ -547,24 +479,22 @@ public PagedIterable<DeletedCertificate> listDeletedCertificates(Context context
 
 
 ## Scenario - Create Certificate Issuer
-
+Question: JS calls it set Certificate Issuer.
 ### Java
 ```java
-public Mono<Issuer> createCertificateIssuer(String name, String provider);
-public Mono<Issuer> createCertificateIssuer(Issuer issuer);
-public Mono<Response<Issuer>> createCertificateIssuerWithResponse(Issuer issuer);
+public Mono<Issuer> createIssuer(String name, String provider);
+public Mono<Issuer> createssuer(Issuer issuer);
+public Mono<Response<Issuer>> createIssuerWithResponse(Issuer issuer);
             
-public Issuer createCertificateIssuer(String name, String provider);
-public Issuer createCertificateIssuer(Issuer issuer);
-public Response<Issuer> createCertificateIssuerWithResponse(Issuer issuer, Context context)
+public Issuer createIssuer(String name, String provider);
+public Issuer createIssuer(Issuer issuer);
+public Response<Issuer> createIssuerWithResponse(Issuer issuer, Context context)
 ```
 
 ### .NET
-```net
-        public virtual Response<Issuer> CreateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<Issuer>> CreateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
-
-
+```c#
+public virtual Response<Issuer> CreateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
+public virtual async Task<Response<Issuer>> CreateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
 ```
 ### Python
 ```python
@@ -590,23 +520,22 @@ public Response<Issuer> createCertificateIssuerWithResponse(Issuer issuer, Conte
 ```
 
 ## Scenario - Get Certificate Issuer
-
+Question: JS uses Get Certificate
 ### Java
 ```java
-public Mono<Response<Issuer>> getCertificateIssuerWithResponse(String name);
-public Mono<Issuer> getCertificateIssuer(String name);
-public Mono<Issuer> getCertificateIssuer(IssuerBase issuerBase);
+public Mono<Response<Issuer>> getIssuerWithResponse(String name);
+public Mono<Issuer> getIssuer(String name);
+public Mono<Issuer> getIssuer(IssuerBase issuerBase);
                 
-public Response<Issuer> getCertificateIssuerWithResponse(String name, Context context);
-public Issuer getCertificateIssuer(String name);
-public Issuer getCertificateIssuer(IssuerBase issuerBase);
+public Response<Issuer> getIssuerWithResponse(String name, Context context);
+public Issuer getIssuer(String name);
+public Issuer getIssuer(IssuerBase issuerBase);
 ```
 
 ### .NET
-```net
-        public virtual Response<Issuer> GetIssuer(string name, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<Issuer>> GetIssuerAsync(string name, CancellationToken cancellationToken = default)
-
+```c#
+public virtual Response<Issuer> GetIssuer(string name, CancellationToken cancellationToken = default)
+public virtual async Task<Response<Issuer>> GetIssuerAsync(string name, CancellationToken cancellationToken = default)
 ```
 ### Python
 ```python
@@ -621,21 +550,21 @@ public Issuer getCertificateIssuer(IssuerBase issuerBase);
 ```
 
 ## Scenario - Delete Certificate Issuer
-
+Question: JS uses Delete Certificate
 ### Java
 ```java
-public Mono<Response<Issuer>> deleteCertificateIssuerWithResponse(String name);
-public Mono<Issuer> deleteCertificateIssuer(String name);
+public Mono<Response<Issuer>> deletessuerWithResponse(String name);
+public Mono<Issuer> deleteIssuer(String name);
 
 
-public Response<Issuer> deleteCertificateIssuerWithResponse(String name, Context context);
-public Issuer deleteCertificateIssuer(String name);
+public Response<Issuer> deleteIssuerWithResponse(String name, Context context);
+public Issuer deleteIssuer(String name);
 ```
 
 ### .NET
-```net
-        public virtual Response<Issuer> DeleteIssuer(string name, CancellationToken cancellationToken = default)
-                public virtual async Task<Response<Issuer>> DeleteIssuerAsync(string name, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<Issuer> DeleteIssuer(string name, CancellationToken cancellationToken = default)
+public virtual async Task<Response<Issuer>> DeleteIssuerAsync(string name, CancellationToken cancellationToken = default)
 
 
 ```
@@ -654,20 +583,20 @@ public Issuer deleteCertificateIssuer(String name);
 
 
 ## Scenario - List Certificate Issuers
-
+Question: JS uses List Certificate
 ### Java
 ```java
-public PagedFlux<IssuerBase> listCertificateIssuers();
+public PagedFlux<IssuerProperties> listIssuers();
 
 
-public PagedIterable<IssuerBase> listCertificateIssuers();
-public PagedIterable<IssuerBase> listCertificateIssuers(Context context);
+public PagedIterable<IssuerProperties> listIssuers();
+public PagedIterable<IssuerPropeties> listIssuers(Context context);
 ```
 
 ### .NET
-```net
-        public virtual IEnumerable<Response<IssuerProperties>> GetIssuers(CancellationToken cancellationToken = default)
-        public virtual IAsyncEnumerable<Response<IssuerProperties>> GetIssuersAsync(CancellationToken cancellationToken = default)
+```c#
+public virtual IEnumerable<Response<IssuerProperties>> GetIssuers(CancellationToken cancellationToken = default)
+public virtual IAsyncEnumerable<Response<IssuerProperties>> GetIssuersAsync(CancellationToken cancellationToken = default)
 
 ```
 ### Python
@@ -683,22 +612,21 @@ public PagedIterable<IssuerBase> listCertificateIssuers(Context context);
 ```
 
 ## Scenario - Update Certificate Issuer
-
+Question: jS uses Certificate in middle
 ### Java
 ```java
-public Mono<Issuer> updateCertificateIssuer(Issuer issuer);
-public Mono<Response<Issuer>> updateCertificateIssuerWithResponse(Issuer issuer);
+public Mono<Issuer> updateIssuer(Issuer issuer);
+public Mono<Response<Issuer>> updateIssuerWithResponse(Issuer issuer);
 
 
-
-public Issuer updateCertificateIssuer(Issuer issuer);
-public Response<Issuer> updateCertificateIssuerWithResponse(Issuer issuer, Context context);
+public Issuer updateIssuer(Issuer issuer);
+public Response<Issuer> updateIssuerWithResponse(Issuer issuer, Context context);
 ```
 
 ### .NET
-```net
-        public virtual Response<Issuer> UpdateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<Issuer>> UpdateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<Issuer> UpdateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
+public virtual async Task<Response<Issuer>> UpdateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
 
 ```
 ### Python
@@ -726,7 +654,7 @@ public Response<Issuer> updateCertificateIssuerWithResponse(Issuer issuer, Conte
 
 
 ## Scenario - Get Certificate Operation
-
+Question: Do we need this, if we have LRO/Poller support ?
 ### Java
 ```java
 
@@ -734,9 +662,9 @@ public Response<Issuer> updateCertificateIssuerWithResponse(Issuer issuer, Conte
 ```
 
 ### .NET
-```net
-        public virtual CertificateOperation GetCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
-        public virtual async Task<CertificateOperation> GetCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
+```c#
+public virtual CertificateOperation GetCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
+public virtual async Task<CertificateOperation> GetCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
 
 
 ```
@@ -753,23 +681,24 @@ public Response<Issuer> updateCertificateIssuerWithResponse(Issuer issuer, Conte
 ```
 
 ## Scenario - Cancel Certificate Operation
-
 ### Java
 ```java
-    def cancel_certificate_operation(self, name, **kwargs):
-
+public Mono<CertificateOperation> cancelCertificateOperation(String certificateName);
+public Mono<Response<CertificateOperation>> cancelCertificateOperation(String certificateName);
+     
+public CertificateOperation cancelCertificateOperation(String certificateName);
+public Response<CertificateOperation> cancelCertificateOperation(String certificateName);
 ```
 
 ### .NET
-```net
-        public virtual CertificateOperation CancelCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
-
-        public virtual async Task<CertificateOperation> CancelCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
+```c#
+public virtual CertificateOperation CancelCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
+public virtual async Task<CertificateOperation> CancelCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
 
 ```
 ### Python
 ```python
-
+    def cancel_certificate_operation(self, name, **kwargs):
 ```
 ### JS/TS
 ```ts
@@ -783,16 +712,17 @@ public Response<Issuer> updateCertificateIssuerWithResponse(Issuer issuer, Conte
 
 ### Java
 ```java
-  public async deleteCertificateOperation(
-    name: string,
-    options?: RequestOptionsBase
-  ): Promise<CertificateOperation>
+public Mono<CertificateOperation> deleteCertificateOperation(String certificateName);
+public Mono<Response<CertificateOperation>> deleteCertificateOperation(String certificateName);
+     
+public CertificateOperation deleteCertificateOperation(String certificateName);
+public Response<CertificateOperation> deleteCertificateOperation(String certificateName);
 ```
 
 ### .NET
-```net
-        public virtual CertificateOperation DeleteCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
-        public virtual async Task<CertificateOperation> DeleteCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
+```c#
+public virtual CertificateOperation DeleteCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
+public virtual async Task<CertificateOperation> DeleteCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
 
 
 ```
@@ -811,21 +741,21 @@ public Response<Issuer> updateCertificateIssuerWithResponse(Issuer issuer, Conte
 
 
 ## Scenario - Set Certificate Contacts
-
+Question: JS uses Certificate in middle ?
 ### Java
 ```java
-public PagedFlux<Contact> setCertificateContacts(List<Contact> contacts);
+public PagedFlux<Contact> setContacts(List<Contact> contacts);
 
 
 
-public PagedIterable<Contact> setCertificateContacts(List<Contact> contacts);
-public PagedIterable<Contact> setCertificateContacts(List<Contact> contacts, Context context);
+public PagedIterable<Contact> setContacts(List<Contact> contacts);
+public PagedIterable<Contact> setContacts(List<Contact> contacts, Context context);
 ```
 
 ### .NET
-```net
-        public virtual Response<IList<Contact>> SetContacts(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<IList<Contact>>> SetContactsAsync(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<IList<Contact>> SetContacts(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
+public virtual async Task<Response<IList<Contact>>> SetContactsAsync(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
 
 
 ```
@@ -845,43 +775,40 @@ public PagedIterable<Contact> setCertificateContacts(List<Contact> contacts, Con
 
 ### Java
 ```java
-public PagedFlux<Contact> listCertificateContacts();
+public PagedFlux<Contact> listContacts();
     
-public PagedIterable<Contact> listCertificateContacts();
-public PagedIterable<Contact> listCertificateContacts(Context context);
+public PagedIterable<Contact> listContacts();
+public PagedIterable<Contact> listContacts(Context context);
 ```
 
 ### .NET
-```net
-        public virtual Response<IList<Contact>> GetContacts(CancellationToken cancellationToken = default)
-        public virtual async Task<Response<IList<Contact>>> GetContactsAsync(CancellationToken cancellationToken = default)
-
-
+```c#
+public virtual Response<IList<Contact>> GetContacts(CancellationToken cancellationToken = default)
+public virtual async Task<Response<IList<Contact>>> GetContactsAsync(CancellationToken cancellationToken = default)
 ```
 ### Python
 ```python
-    def get_contacts(self, **kwargs):
+def get_contacts(self, **kwargs):
 ```
 ### JS/TS
 ```ts
-  public async getCertificateContacts(options?: RequestOptionsBase): Promise<Contacts>
+public async getCertificateContacts(options?: RequestOptionsBase): Promise<Contacts>
 ```
 
 ## Scenario - Delete Certificate Contacts
-
+Question: JS uses 'Certificate'
 ### Java
 ```java
-public PagedFlux<Contact> deleteCertificateContacts();
+public PagedFlux<Contact> deleteContacts();
 
-
-public PagedIterable<Contact> deleteCertificateContacts();
-public PagedIterable<Contact> deleteCertificateContacts(Context context);
+public PagedIterable<Contact> deleteContacts();
+public PagedIterable<Contact> deleteContacts(Context context);
 ```
 
 ### .NET
-```net
-        public virtual Response<IList<Contact>> DeleteContacts(CancellationToken cancellationToken = default)
-        public virtual async Task<Response<IList<Contact>>> DeleteContactsAsync(CancellationToken cancellationToken = default)
+```c#
+public virtual Response<IList<Contact>> DeleteContacts(CancellationToken cancellationToken = default)
+public virtual async Task<Response<IList<Contact>>> DeleteContactsAsync(CancellationToken cancellationToken = default)
 
 ```
 ### Python
@@ -905,10 +832,8 @@ public Response<byte[]> getPendingCertificateSigningRequestWithResponse(String c
 ```
 
 ### .NET
-```net
-
+```c#
 Not in Master.
-
 ```
 ### Python
 ```python
@@ -941,8 +866,7 @@ public Response<Certificate> mergeCertificateWithResponse(MergeCertificateOption
 ```
 
 ### .NET
-```net
-
+```c#
 Not in master.
 
 ```
@@ -967,17 +891,20 @@ Not in master.
 ```
 
 ## Scenario - Import Certificate
-
+Question: Should we support reading from PEM cert file directly ?
 ### Java
 ```java
-
-
+public Mono<Certificate> importCertificate( String certificateName, String certificateFilePath);
+public Mono<Response<Certificate>> importCertificate(CertificateImport certificateImport);
+    
+public Certificate importCertificate( String certificateName, String certificateFilePath);
+public Response<Certificate> importCertificate(CertificateImport certificateImport);
 ```
 
 ### .NET
-```net
-        public virtual Response<CertificateWithPolicy> ImportCertificate(CertificateImport import, CancellationToken cancellationToken = default)
-        public virtual async Task<Response<CertificateWithPolicy>> ImportCertificateAsync(CertificateImport import, CancellationToken cancellationToken = default)
+```c#
+public virtual Response<CertificateWithPolicy> ImportCertificate(CertificateImport import, CancellationToken cancellationToken = default)
+public virtual async Task<Response<CertificateWithPolicy>> ImportCertificateAsync(CertificateImport import, CancellationToken cancellationToken = default)
 
 ```
 ### Python

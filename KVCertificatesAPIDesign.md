@@ -9,6 +9,7 @@ The Azure Key Vault Certificate client library enables programmatically managing
 * Certificate Policy
 * Issuer
 * Contact
+* Certificate Operation
 
 
 ## Scenario - Create Certificate

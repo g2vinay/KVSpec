@@ -1808,6 +1808,440 @@ async def import_certificate(
 ```
 
 ## Certifciates Datastructures Design
+## KeyVaultCertificate
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+## KeyVaultCertificateWithPolicy
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+## CertificateProperties
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+## CertificateOperation
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificateOperationError
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## DeletedCertificate
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+## CertificatePolicy
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificateContentType
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificateKeyUsage
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificatePolicyAction
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## LifeTimeAction
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## SubjectAlternativeNames
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificateKeyCurveName
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificateKeyType
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## MergeCertificateOptions
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## ImportCertificateOptions
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## WellKnownIssuerNames
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+
+## AdministratorContact
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+
+## CertificateContact
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+## CertificateIssuer
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
+
+## IssuerProperties
+### .NET
+```c#
+
+```
+
+### Java
+```java
+
+```
+
+### Python
+```python
+
+```
+### JS/TS
+```ts
+
+```
 
 ![](https://github.com/g2vinay/KVSpec/blob/master/CertsDesign4.png)
 

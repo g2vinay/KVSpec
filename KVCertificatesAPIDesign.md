@@ -190,13 +190,11 @@ public virtual async Task<CertificateOperation> StartCreateCertificateAsync(stri
 ```
 ### JS/TS
 ```ts
-  public async createCertificate(
-    name: string,
+  public async beginCreateCertificate(
+    certificateName: string,
     certificatePolicy: CertificatePolicy,
-    enabled?: boolean,
-    tags?: CertificateTags,
-    options?: RequestOptionsBase
-  ): Promise<Certificate> 
+    options: BeginCreateCertificateOptions = {}
+  ): Promise<PollerLike<PollOperationState<KeyVaultCertificate>, KeyVaultCertificate>>
 ```
 
 ## Scenario - Get Certificate
@@ -263,15 +261,15 @@ def get_certificate_with_policy(self, name, **kwargs)
 ### JS/TS
 ```javascript
   public async getCertificate(
-    name: string,
-    version: string,
-    options?: RequestOptionsBase
-  ): Promise<Certificate>
+    certificateName: string,
+    options: GetCertificateOptions = {}
+  ): Promise<KeyVaultCertificateWithPolicy>
   
-    public async getCertificateWithPolicy(
-    name: string,
-    options?: RequestOptionsBase
-  ): Promise<CertificateWithPolicy>
+  public async getCertificateVersion(
+    certificateName: string,
+    version: string,
+    options: GetCertificateVersionOptions = {}
+  ): Promise<KeyVaultCertificate>
 ```
 
 ## Scenario - Get Certificate Policy
@@ -321,8 +319,8 @@ public virtual async Task<Response<CertificatePolicy>> GetCertificatePolicyAsync
 ### JS/TS
 ```ts
   public async getCertificatePolicy(
-    name: string,
-    options?: RequestOptionsBase
+    certificateName: string,
+    options: GetCertificatePolicyOptions = {}
   ): Promise<CertificatePolicy>
 ```
 
@@ -446,11 +444,11 @@ public virtual async Task<Response<Certificate>> UpdateCertificatePropertiesAsyn
 
 ### JS/TS
 ```ts
-  public async updateCertificateProperties(
-    name: string,
+  public async updateCertificate(
+    certificateName: string,
     version: string,
-    options?: KeyVaultClientUpdateCertificateOptionalParams
-  ): Promise<Certificate>
+    options: UpdateCertificateOptions = {}
+  ): Promise<KeyVaultCertificate>
 ```
 
 ## Scenario - Update Certificate Policy
@@ -504,10 +502,10 @@ public virtual async Task<Response<CertificatePolicy>> UpdateCertificatePolicyAs
 ### JS/TS
 ```ts
   public async updateCertificatePolicy(
-    name: string,
-    policy: CertificatePolicy,
-    options?: RequestOptionsBase
-  ): Promise<CertificatePolicy> 
+    certificateName: string,
+    certificatePolicy: CertificatePolicy,
+    options: UpdateCertificatePolicyOptions = {}
+  ): Promise<CertificatePolicy>
 ```
 
 
@@ -566,10 +564,10 @@ public virtual async Task<Response<DeletedCertificate>> DeleteCertificateAsync(s
 ```
 ### JS/TS
 ```ts
-  public async deleteCertificate(
+  public async beginDeleteCertificate(
     certificateName: string,
-    options?: RequestOptionsBase
-  ): Promise<DeletedCertificate>
+    options: BeginDeleteCertificateOptions = {}
+  ): Promise<PollerLike<PollOperationState<DeletedCertificate>, DeletedCertificate>>
 ```
 
 ## Scenario - Get Deleted Certificate
@@ -616,8 +614,8 @@ public virtual async Task<Response<DeletedCertificate>> GetDeletedCertificateAsy
 ### JS/TS
 ```ts
   public async getDeletedCertificate(
-    name: string,
-    options?: RequestOptionsBase
+    certificateName: string,
+    options: GetDeletedCertificateOptions = {}
   ): Promise<DeletedCertificate>
 ```
 
@@ -661,10 +659,10 @@ public virtual async Task<Response<CertificateWithPolicy>> RecoverDeletedCertifi
 ```
 ### JS/TS
 ```ts
-  public async recoverDeletedCertificate(
-    name: string,
-    options?: RequestOptionsBase
-  ): Promise<Certificate>
+  public async beginRecoverDeletedCertificate(
+    certificateName: string,
+    options: BeginRecoverDeletedCertificateOptions = {}
+  ): Promise<PollerLike<PollOperationState<KeyVaultCertificate>, KeyVaultCertificate>>
 ```
 
 ## Scenario - Purge Delete Certificate
@@ -714,7 +712,10 @@ public virtual async Task<Response> PurgeDeletedCertificateAsync(string name, Ca
 ```
 ### JS/TS
 ```ts
-public async purgeDeletedCertificate(name: string, options?: RequestOptionsBase): Promise<null>
+  public async purgeDeletedCertificate(
+    certificateName: string,
+    options: PurgeDeletedCertificateOptions = {}
+  ): Promise<null>
 ```
 
 ## Scenario - Backup Certificate
@@ -770,8 +771,8 @@ def backup_certificate(self, name, **kwargs):
 ### JS/TS
 ```ts
   public async backupCertificate(
-    name: string,
-    options?: RequestOptionsBase
+    certificateName: string,
+    options: BackupCertificateOptions = {}
   ): Promise<BackupCertificateResult>
 ```
 
@@ -828,10 +829,10 @@ public virtual async Task<Response<CertificateWithPolicy>> RestoreCertificateAsy
 ```
 ### JS/TS
 ```ts
-  public async restoreCertificate(
+  public async restoreCertificateBackup(
     certificateBackup: Uint8Array,
-    options?: RequestOptionsBase
-  ): Promise<Certificate>
+    options: RestoreCertificateBackupOptions = {}
+  ): Promise<KeyVaultCertificate>
 ```
 
 ## Scenario - List Ceriticates
@@ -889,9 +890,9 @@ public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificates
 ```
 ### JS/TS
 ```ts
-  public listCertificates(
-    options?: RequestOptionsBase
-  ): PagedAsyncIterableIterator<CertificateAttributes, CertificateAttributes[]>
+  public listPropertiesOfCertificates(
+    options: ListPropertiesOfCertificatesOptions = {}
+  ): PagedAsyncIterableIterator<CertificateProperties, CertificateProperties[]>
 ```
 
 ## Scenario - List Ceriticate Versions
@@ -954,10 +955,10 @@ public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificateV
 ```
 ### JS/TS
 ```ts
-  public listCertificateVersions(
-    name: string,
-    options?: RequestOptionsBase
-  ): PagedAsyncIterableIterator<CertificateAttributes, CertificateAttributes[]>
+  public listPropertiesOfCertificateVersions(
+    certificateName: string,
+    options: ListPropertiesOfCertificateVersionsOptions = {}
+  ): PagedAsyncIterableIterator<CertificateProperties, CertificateProperties[]>
 ```
 
 ## Scenario - List Deleted Certificates
@@ -1021,8 +1022,8 @@ public virtual IAsyncEnumerable<Response<DeletedCertificate>> GetDeletedCertific
 ### JS/TS
 ```javascript
   public listDeletedCertificates(
-    options?: KeyVaultClientGetDeletedCertificatesOptionalParams
-  ): PagedAsyncIterableIterator<DeletedCertificate, DeletedCertificate[]> 
+    options: ListDeletedCertificatesOptions = {}
+  ): PagedAsyncIterableIterator<DeletedCertificate, DeletedCertificate[]>
 ```
 
 
@@ -1074,7 +1075,7 @@ client.create_issuer(
 ```
 ### JS/TS
 ```ts
-await client.setIssuer("IssuerName", "Provider");
+await client.createIssuer("IssuerName", "Provider");
 ```
 
 ### API
@@ -1110,10 +1111,10 @@ public virtual async Task<Response<Issuer>> CreateIssuerAsync(Issuer issuer, Can
 ```
 ### JS/TS
 ```javascript
-  public async setIssuer(
+  public async createIssuer(
     issuerName: string,
     provider: string,
-    options?: KeyVaultClientSetCertificateIssuerOptionalParams
+    options: CreateIssuerOptions = {}
   ): Promise<CertificateIssuer>
 ```
 
@@ -1153,7 +1154,7 @@ print(issuer1.account_id)
 ```
 ### JS/TS
 ```ts
-const certificateIssuer = await client.getCertificateIssuer("IssuerName");
+const certificateIssuer = await client.getIssuer("IssuerName");
 console.log(certificateIssuer);
 ```
 
@@ -1182,7 +1183,7 @@ public virtual async Task<Response<Issuer>> GetIssuerAsync(string name, Cancella
 ```ts
   public async getIssuer(
     issuerName: string,
-    options?: RequestOptionsBase
+    options: GetIssuerOptions = {}
   ): Promise<CertificateIssuer>
 ```
 
@@ -1239,7 +1240,7 @@ public virtual async Task<Response<Issuer>> DeleteIssuerAsync(string name, Cance
 ```ts
   public async deleteIssuer(
     issuerName: string,
-    options?: RequestOptionsBase
+    options: DeleteIssuerOptions = {}
   ): Promise<CertificateIssuer>
 ```
 
@@ -1282,8 +1283,8 @@ for issuer in issuers:
 ### JS/TS
 ```ts
 // All in one call
-for await (const issuer of client.listCertificateIssuers()) {
-    console.log(issuer);
+for await (const issuer of client.listIssuers()) {
+ console.log(issuer);
 }
 ```
 
@@ -1307,9 +1308,9 @@ public virtual IAsyncEnumerable<Response<IssuerProperties>> GetIssuersAsync(Canc
 ```
 ### JS/TS
 ```ts
-  public listIssuers(
-    options?: KeyVaultClientGetCertificateIssuersOptionalParams
-  ): PagedAsyncIterableIterator<CertificateIssuer, CertificateIssuer[]> 
+  public listPropertiesOfIssuers(
+    options: ListPropertiesOfIssuersOptions = {}
+  ): PagedAsyncIterableIterator<IssuerProperties, IssuerProperties[]>
 ```
 
 ## Scenario - Update Certificate Issuer
@@ -1374,8 +1375,8 @@ public virtual async Task<Response<Issuer>> UpdateIssuerAsync(Issuer issuer, Can
 ```ts
   public async updateIssuer(
     issuerName: string,
-    options?: KeyVaultClientUpdateCertificateIssuerOptionalParams
-  ): Promise<CertificateIssuer> 
+    options: UpdateIssuerOptions = {}
+  ): Promise<CertificateIssuer>
 ```
 
 
@@ -1386,13 +1387,16 @@ Question: Do we need this, if we have LRO/Poller support ?
 ### Usage
 ### JS/TS
 ```ts
-const client = new CertificatesClient(url, credentials);
-await client.createCertificate("MyCertificate", {
-  issuerParameters: { name: "Self" },
-  x509CertificateProperties: { subject: "cn=MyCert" }
-});
-const operation = await client.getCertificateOperation("MyCertificate");
-console.log(operation);
+   const client = new CertificateClient(url, credentials);
+   await client.beginCreateCertificate("MyCertificate", {
+     issuerName: "Self",
+     subject: "cn=MyCert"
+   });
+   const poller = await client.getCertificateOperation("MyCertificate");
+   const pendingCertificate = poller.getResult();
+   console.log(pendingCertificate);
+   const certificateOperation = poller.getResult();
+   console.log(certificateOperation);
 ```
 
 ### Java
@@ -1412,9 +1416,9 @@ public virtual async Task<CertificateOperation> GetCertificateOperationAsync(str
 ### JS/TS
 ```ts
   public async getCertificateOperation(
-    name: string,
-    options?: RequestOptionsBase
-  ): Promise<CertificateOperation>
+    certificateName: string,
+    options: GetCertificateOperationOptions = {}
+  ): Promise<PollerLike<PollOperationState<CertificateOperation>, CertificateOperation>>
 ```
 
 ## Scenario - Cancel Certificate Operation
@@ -1458,9 +1462,9 @@ public virtual async Task<CertificateOperation> CancelCertificateOperationAsync(
 ### JS/TS
 ```ts
   public async cancelCertificateOperation(
-    name: string,
-    options?: RequestOptionsBase
-  ): Promise<CertificateOperation> 
+    certificateName: string,
+    options: CancelCertificateOperationOptions = {}
+  ): Promise<CertificateOperation>
 ```
 
 ## Scenario - Delete Certificate Operation
@@ -1531,13 +1535,12 @@ for (Contact contact : certificateClient.setContacts(Arrays.asList(contactToAdd)
 
 ### JS/TS
  ```ts
-let client = new CertificatesClient(url, credentials);
-await client.setContacts([{
-   emailAddress: "b@b.com",
-   name: "b",
-   phone: "222222222222"
- }]);
-await client.deleteCertificateContacts();
+   let client = new CertificateClient(url, credentials);
+   await client.setContacts([{
+     emailAddress: "b@b.com",
+     name: "b",
+     phone: "222222222222"
+   }]);
 ```
 
 ### API
@@ -1562,8 +1565,8 @@ public virtual async Task<Response<IList<Contact>>> SetContactsAsync(IEnumerable
 ```ts
   public async setContacts(
     contacts: Contact[],
-    options?: RequestOptionsBase
-  ): Promise<Contacts>
+    options: SetContactsOptions = {}
+  ): Promise<CertificateContacts>
 ```
 
 ## Scenario - List Certificate Contacts
@@ -1653,7 +1656,7 @@ public virtual async Task<Response<IList<Contact>>> DeleteContactsAsync(Cancella
 ```
 ### JS/TS
 ```ts
-  public async deleteContacts(options?: RequestOptionsBase): Promise<Contacts>
+public async deleteContacts(options: DeleteContactsOptions = {}): Promise<CertificateContacts>
 ```
 
 ## Scenario - Get Certificate Signing Request
@@ -1700,6 +1703,10 @@ Not in Master
 ## Scenario - Merge Certificate
 ### Usage
 ### java
+ ```java
+ ```
+
+### JS/TS
  ```ts
 const client = new CertificatesClient(url, credentials);
 await client.createCertificate("MyCertificate", {
@@ -1722,11 +1729,6 @@ childProcess.execSync("openssl x509 -req -in test.csr -CA ca.crt -CAkey ca.key -
 const base64Crt = fs.readFileSync("test.crt").toString().split("\n").slice(1, -1).join("");
 
 await client.mergeCertificate(certificateName, [Buffer.from(base64Crt)]);
- ```
-
-### JS/TS
- ```ts
-await client.deleteContacts();
 ```
 
 ### Java
@@ -1763,10 +1765,10 @@ public virtual async Task<Response<CertificateWithPolicy>> MergeCertificateAsync
 ### JS/TS
 ```ts
   public async mergeCertificate(
-    name: string,
+    certificateName: string,
     x509Certificates: Uint8Array[],
-    options?: RequestOptionsBase
-  ): Promise<Certificate>
+    options: MergeCertificateOptions = {}
+  ): Promise<KeyVaultCertificate>
 ```
 
 ## Scenario - Import Certificate
@@ -1806,10 +1808,10 @@ public virtual async Task<Response<CertificateWithPolicy>> ImportCertificateAsyn
 ### JS/TS
 ```ts
   public async importCertificate(
-    name: string,
+    certificateName: string,
     base64EncodedCertificate: string,
-    options?: KeyVaultClientImportCertificateOptionalParams
-  ): Promise<Certificate>
+    options: ImportCertificateOptions = {}
+  ): Promise<KeyVaultCertificate>
 ```
 
 ## Certifciates Datastructures Design

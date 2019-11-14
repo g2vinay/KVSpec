@@ -272,7 +272,7 @@ self, certificate_name: str, version: str, **kwargs: "**Any"
     certificateName: string,
     options: GetCertificateOptions = {}
   ): Promise<KeyVaultCertificateWithPolicy>
-  
+
   public async getCertificateVersion(
     certificateName: string,
     version: string,
@@ -1734,7 +1734,19 @@ public class KeyVaultCertificate : IJsonDeserializable {
 
 ### Python
 ```python
-
+def __init__(
+    self,
+    policy,  # type: CertificatePolicy
+    properties=None,  # type: Optional[CertificateProperties]
+    cer=None,  # type: Optional[bytes]
+    **kwargs  # type: Any
+):
+    # type: (...) -> None
+    self._properties = properties
+    self._key_id = kwargs.get("key_id", None)
+    self._secret_id = kwargs.get("secret_id")
+    self._policy = policy
+    self._cer = cer
 ```
 ### JS/TS
 ```ts
@@ -1756,6 +1768,7 @@ public class KeyVaultCertificateWithPolicy : KeyVaultCertificate {
 
 ### Python
 ```python
+N/A
 
 ```
 ### JS/TS
@@ -1791,7 +1804,13 @@ public class CertificateProperties : IJsonDeserializable {
 
 ### Python
 ```python
-
+def __init__(self, **kwargs):
+    # type: (**Any) -> None
+    self._attributes = kwargs.get("attributes", None)
+    self._id = kwargs.get("cert_id", None)
+    self._vault_id = parse_vault_id(self._id)
+    self._thumbprint = kwargs.get("thumbprint", None)
+    self._tags = kwargs.get("tags", None)
 ```
 ### JS/TS
 ```ts
@@ -1840,7 +1859,33 @@ public class CertificateOperationProperties : IJsonDeserializable {
 
 ### Python
 ```python
-
+def __init__(
+    self,
+    cert_operation_id=None,  # type: Optional[str]
+    issuer_name=None,  # type: Optional[str]
+    certificate_type=None,  # type: Optional[str]
+    certificate_transparency=False,  # type: Optional[bool]
+    csr=None,  # type: Optional[bytes]
+    cancellation_requested=False,  # type: Optional[bool]
+    status=None,  # type: Optional[str]
+    status_details=None,  # type: Optional[str]
+    error=None,  # type: Optional[models.Error]
+    target=None,  # type: Optional[str]
+    request_id=None,  # type: Optional[str]
+):
+    # type: (...) -> None
+    self._id = cert_operation_id
+    self._vault_id = parse_vault_id(cert_operation_id)
+    self._issuer_name = issuer_name
+    self._certificate_type = certificate_type
+    self._certificate_transparency = certificate_transparency
+    self._csr = csr
+    self._cancellation_requested = cancellation_requested
+    self._status = status
+    self._status_details = status_details
+    self._error = error
+    self._target = target
+    self._request_id = request_id
 ```
 ### JS/TS
 ```ts
@@ -1865,7 +1910,11 @@ public class CertificateOperationError : IJsonDeserializable {
 
 ### Python
 ```python
-
+def __init__(self, code, message, inner_error):
+    # type: (str, str, models.Error, **Any) -> None
+    self._code = code
+    self._message = message
+    self._inner_error = inner_error
 ```
 ### JS/TS
 ```ts
@@ -1890,7 +1939,18 @@ public class DeletedCertificate : KeyVaultCertificateWithPolicy {
 
 ### Python
 ```python
-
+def __init__(
+    self,
+    properties=None,  # type: Optional[CertificateProperties]
+    policy=None,  # type: Optional[CertificatePolicy]
+    cer=None,  # type: Optional[bytes]
+    **kwargs  # type: **Any
+):
+    # type: (...) -> None
+    super(DeletedCertificate, self).__init__(properties=properties, policy=policy, cer=cer, **kwargs)
+    self._deleted_date = kwargs.get("deleted_date", None)
+    self._recovery_id = kwargs.get("recovery_id", None)
+    self._scheduled_purge_date = kwargs.get("scheduled_purge_date", None)
 ```
 ### JS/TS
 ```ts
@@ -1932,7 +1992,29 @@ public class CertificatePolicy : IJsonSerializable, IJsonDeserializable {
 
 ### Python
 ```python
-
+def __init__(
+    self,
+    issuer_name,  # type: str
+    **kwargs  # type: **Any
+):
+    # type: (...) -> None
+    self._issuer_name = issuer_name
+    self._subject_name = kwargs.pop("subject_name", None)
+    self._subject_alternative_names = kwargs.pop("subject_alternative_names", None) or None
+    self._attributes = kwargs.pop("attributes", None)
+    self._id = kwargs.pop("cert_policy_id", None)
+    self._exportable = kwargs.pop("exportable", None)
+    self._key_type = kwargs.pop("key_type", None)
+    self._key_size = kwargs.pop("key_size", None)
+    self._reuse_key = kwargs.pop("reuse_key", None)
+    self._curve = kwargs.pop("curve", None)
+    self._ekus = kwargs.pop("ekus", None)
+    self._key_usage = kwargs.pop("key_usage", None)
+    self._content_type = kwargs.pop("content_type", None)
+    self._validity_in_months = kwargs.pop("validity_in_months", None)
+    self._lifetime_actions = kwargs.pop("lifetime_actions", None)
+    self._certificate_type = kwargs.pop("certificate_type", None)
+    self._certificate_transparency = kwargs.pop("certificate_transparency", None)
 ```
 ### JS/TS
 ```ts
@@ -1964,8 +2046,12 @@ public struct CertificateContentType : IEquatable<CertificateContentType> {
 
 ### Python
 ```python
+class SecretContentType(str, Enum):
+    """Content type of the secrets as specified in Certificate Policy"""
 
-```
+    PKCS12 = "application/x-pkcs12"
+    PEM = "application/x-pem-file"
+    ```
 ### JS/TS
 ```ts
 
@@ -2003,7 +2089,18 @@ public struct CertificateKeyUsage : IEquatable<CertificateKeyUsage> {
 
 ### Python
 ```python
+class KeyUsageType(str, Enum):
+    """The supported types of key usages"""
 
+    digital_signature = "digitalSignature"
+    non_repudiation = "nonRepudiation"
+    key_encipherment = "keyEncipherment"
+    data_encipherment = "dataEncipherment"
+    key_agreement = "keyAgreement"
+    key_cert_sign = "keyCertSign"
+    crl_sign = "cRLSign"
+    encipher_only = "encipherOnly"
+    decipher_only = "decipherOnly"
 ```
 ### JS/TS
 ```ts
@@ -2035,7 +2132,11 @@ public struct CertificatePolicyAction : IEquatable<CertificatePolicyAction> {
 
 ### Python
 ```python
+class CertificatePolicyAction(str, Enum):
+    """The supported action types for the lifetime of a certificate"""
 
+    email_contacts = "EmailContacts"
+    auto_renew = "AutoRenew"
 ```
 ### JS/TS
 ```ts
@@ -2061,7 +2162,11 @@ public class LifetimeAction : IJsonSerializable, IJsonDeserializable {
 
 ### Python
 ```python
-
+def __init__(self, action, lifetime_percentage=None, days_before_expiry=None):
+    # type: (CertificatePolicyAction, Optional[int], Optional[int]) -> None
+    self._lifetime_percentage = lifetime_percentage
+    self._days_before_expiry = days_before_expiry
+    self._action = action
 ```
 ### JS/TS
 ```ts
@@ -2090,7 +2195,10 @@ public class SubjectAlternativeNames : IEnumerable<string>, IEnumerable, IJsonSe
 
 ### Python
 ```python
-
+# Might end up having it, might not. If we do, this is the implementation
+def __init__(self, subject_type, subject_values):
+    self._subject_type = subject_type
+    self._subject_values = subject_values
 ```
 ### JS/TS
 ```ts
@@ -2124,7 +2232,13 @@ public struct CertificateKeyCurveName : IEquatable<CertificateKeyCurveName> {
 
 ### Python
 ```python
+class KeyCurveName(str, Enum):
+    """Supported elliptic curves"""
 
+    p_256 = "P-256"  #: The NIST P-256 elliptic curve, AKA SECG curve SECP256R1.
+    p_384 = "P-384"  #: The NIST P-384 elliptic curve, AKA SECG curve SECP384R1.
+    p_521 = "P-521"  #: The NIST P-521 elliptic curve, AKA SECG curve SECP521R1.
+    p_256_k = "P-256K"  #: The SECG SECP256K1 elliptic curve.
 ```
 ### JS/TS
 ```ts
@@ -2159,7 +2273,18 @@ public struct CertificateKeyType : IEquatable<CertificateKeyType> {
 
 ### Python
 ```python
+class KeyUsageType(str, Enum):
+    """The supported types of key usages"""
 
+    digital_signature = "digitalSignature"
+    non_repudiation = "nonRepudiation"
+    key_encipherment = "keyEncipherment"
+    data_encipherment = "dataEncipherment"
+    key_agreement = "keyAgreement"
+    key_cert_sign = "keyCertSign"
+    crl_sign = "cRLSign"
+    encipher_only = "encipherOnly"
+    decipher_only = "decipherOnly"
 ```
 ### JS/TS
 ```ts
@@ -2186,7 +2311,7 @@ public class MergeCertificateOptions : IJsonSerializable {
 
 ### Python
 ```python
-
+N/A
 ```
 ### JS/TS
 ```ts
@@ -2215,7 +2340,7 @@ public class ImportCertificateOptions : IJsonSerializable {
 
 ### Python
 ```python
-
+N/A
 ```
 ### JS/TS
 ```ts
@@ -2239,7 +2364,11 @@ public static class WellKnownIssuerNames {
 
 ### Python
 ```python
+class WellKnownIssuerNames(str, Enum):
+    """Collection of well-known issuer names"""
 
+    Self = "Self"  #: Use this issuer for a self-signed certificate
+    Unknown = "Unknown"
 ```
 ### JS/TS
 ```ts
@@ -2267,7 +2396,12 @@ public class AdministratorContact {
 
 ### Python
 ```python
-
+def __init__(self, first_name=None, last_name=None, email=None, phone=None):
+    # type: (Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    self._first_name = first_name
+    self._last_name = last_name
+    self._phone = phone
+    self._email = email
 ```
 ### JS/TS
 ```ts
@@ -2293,7 +2427,11 @@ public class CertificateContact : IJsonDeserializable, IJsonSerializable {
 
 ### Python
 ```python
-
+def __init__(self, email=None, name=None, phone=None):
+    # type: (Optional[str], Optional[str], Optional[str]) -> None
+    self._email = email
+    self._name = name
+    self._phone = phone
 ```
 ### JS/TS
 ```ts
@@ -2325,7 +2463,22 @@ public class CertificateIssuer : IJsonDeserializable, IJsonSerializable {
 
 ### Python
 ```python
-
+def __init__(
+    self,
+    properties=None,  # type: Optional[IssuerProperties]
+    attributes=None,  # type: Optional[models.IssuerAttributes]
+    account_id=None,  # type: Optional[str]
+    password=None,  # type: Optional[str]
+    organization_id=None,  # type: Optional[str]
+    admin_details=None,  # type: Optional[List[AdministratorContact]]
+):
+    # type: (...) -> None
+    self._properties = properties
+    self._attributes = attributes
+    self._account_id = account_id
+    self._password = password
+    self._organization_id = organization_id
+    self._admin_details = admin_details
 ```
 ### JS/TS
 ```ts
@@ -2349,7 +2502,11 @@ public class IssuerProperties : IJsonDeserializable, IJsonSerializable {
 
 ### Python
 ```python
-
+def __init__(self, provider=None, **kwargs):
+    # type: (Optional[str], **Any) -> None
+    self._id = kwargs.get("issuer_id", None)
+    self._vault_id = parse_vault_id(self._id)
+    self._provider = provider
 ```
 ### JS/TS
 ```ts

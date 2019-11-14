@@ -16,6 +16,13 @@ The Azure Key Vault Certificate client library enables programmatically managing
 ### API
 
 #### Java
+```java
+CertificateAsyncClient certificateAsyncClient = new CertificateClientBuilder()
+    .credential(new DefaultAzureCredentialBuilder().build())
+    .vaultUrl("https://myvault.vault.azure.net/")
+    .serviceVersion(CertificateServiceVersion.V7_0) .  // This parameter is optional, accepted but not used currently.
+    .buildAsyncClient();
+```
 
 #### .NET
 
@@ -57,6 +64,9 @@ public class CertificateClientOptions : ClientOptions {
 ### API
 
 #### Java
+```java
+public String getVaultUrl();
+```
 
 #### .NET
 ```c#

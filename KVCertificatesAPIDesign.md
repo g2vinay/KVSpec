@@ -179,15 +179,16 @@ public virtual Task<CertificateOperation> StartCreateCertificateAsync(string cer
 ### Java
 ```java
 //Retrieve asynchronously
-certificateAsyncClient.getCertificate("certificateName", "certificateVersion")
+certificateAsyncClient.getCertificateVersion("certificateName", "certificateVersion")
     .subscribe(certificateResponse ->
         System.out.printf("Certificate is returned with name %s and secretId %s %n", certificateResponse.name(),
             certificateResponse.secretId()));
 
 // Retrieve synchronously
-Certificate certificate = certificateClient.getCertificateWithPolicy("certificateName");
-System.out.printf("Recevied certificate with name %s and version %s and secret id", certificate.name(),
-    certificate.version(), certificate.secretId());
+KeyVaultCertificateWithPolicy certificate = certificateClient.getCertificate("certificateName");
+System.out.printf("Recevied certificate with name %s and version %s and secret id",
+    certificate.getProperties().getName(),
+    certificate.getProperties().getVersion(), certificate.getSecretId());
 ```
 
 ### Python
@@ -258,13 +259,14 @@ self, certificate_name: str, version: str, **kwargs: "**Any"
 ```java
 //Async
 certificateAsyncClient.getCertificatePolicy("certificateName")
+    .subscriberContext(Context.of(key1, value1, key2, value2))
     .subscribe(policy ->
         System.out.printf("Certificate policy is returned with issuer name %s and subject name %s %n",
-            policy.issuerName(), policy.subjectName()));
+            policy.getIssuerName(), policy.getSubjectName()));
 
 //Sync
 CertificatePolicy policy = certificateClient.getCertificatePolicy("certificateName");
-System.out.printf("Received policy with subject name %s", policy.subjectName());
+System.out.printf("Received policy with subject name %s", policy.getSubjectName());
 ```
 
 ### JS/TS
@@ -309,15 +311,16 @@ Question: Updating Certificate via Properties vs setting fields.
 ```java
 
 //Async
-certificateAsyncClient.getCertificateWithPolicy("certificateName")
+certificateAsyncClient.getCertificate("certificateName")
+    .subscriberContext(Context.of(key1, value1, key2, value2))
     .subscribe(certificateResponseValue -> {
-        CertificateProperties certificateProps = certificateResponseValue.getProperties();
+        KeyVaultCertificate certificate = certificateResponseValue;
         //Update enabled status of the certificate
-        certificateProps.setEnabled(false);
-        certificateAsyncClient.updateCertificateProperties(certificateProps)
+        certificate.getProperties().setEnabled(false);
+        certificateAsyncClient.updateCertificateProperties(certificate.getProperties())
             .subscribe(certificateResponse ->
                 System.out.printf("Certificate's enabled status %s %n",
-                    certificateResponse.getProperties().getEnabled().toString()));
+                    certificateResponse.getProperties().isEnabled().toString()));
     });
 
 //Sync
@@ -432,7 +435,7 @@ certificateAsyncClient.getCertificatePolicy("certificateName")
 
 // Sync
 CertificatePolicy certificatePolicy = certificateClient.getCertificatePolicy("certificateName");
-// Update the certificate policy cert transparency property.
+// Update the certificate policy cert validity property.
 certificatePolicy.setValidityInMonths(24);
 CertificatePolicy updatedCertPolicy = certificateClient.updateCertificatePolicy("certificateName",
     certificatePolicy);
@@ -447,7 +450,6 @@ public Mono<Response<CertificatePolicy>> updateCertificatePolicyWithResponse(Str
 
 public CertificatePolicy updateCertificatePolicy(String certificateName, CertificatePolicy policy) {}
 public Response<CertificatePolicy> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy, Context context) {}
-
 ```
 
 ### .NET
@@ -591,14 +593,21 @@ async def get_deleted_certificate(self, certificate_name: str, **kwargs: "**Any"
 ### Java
 ```java
 //Async
-certificateAsyncClient.recoverDeletedCertificate("deletedCertificateName")
-    .subscribe(recoveredCert ->
-        System.out.printf("Recovered Certificate with name %s %n", recoveredCert.name()));
-
+certificateAsyncClient.beginRecoverDeletedCertificate("deletedCertificateName")
+    .subscribe(pollResponse -> {
+        System.out.println("Recovery Status: " + pollResponse.getStatus().toString());
+        System.out.println("Recover Certificate Name: " + pollResponse.getValue().getName());
+        System.out.println("Recover Certificate Id: " + pollResponse.getValue().getId());
+    });
+    
 //Sync
-Certificate certificate = certificateClient.recoverDeletedCertificate("deletedCertificateName");
-System.out.printf(" Recovered Deleted certificate with name %s and id %s", certificate.name(),
-    certificate.id());
+SyncPoller<KeyVaultCertificate, Void> recoverCertPoller = certificateClient
+    .beginRecoverDeletedCertificate("deletedCertificateName");
+// Recovered certificate is accessible as soon as polling beings
+PollResponse<KeyVaultCertificate> pollResponse = recoverCertPoller.poll();
+System.out.printf(" Recovered Deleted certificate with name %s and id %s", pollResponse.getValue()
+        .getProperties().getName(), pollResponse.getValue().getProperties().getId());
+recoverCertPoller.waitForCompletion();
 ```
 ### JS/TS
  ```ts
@@ -763,15 +772,15 @@ async def backup_certificate(self, certificate_name: str, **kwargs: "**Any") -> 
 ### Java
 ```java
 //Async
-certificateAsyncClient.restoreCertificate(certificateBackupByteArray)
+certificateAsyncClient.restoreCertificateBackup(certificateBackupByteArray)
     .subscriberContext(Context.of(key1, value1, key2, value2))
     .subscribe(certificateResponse -> System.out.printf("Restored Certificate with name %s and key id %s %n",
-        certificateResponse.name(), certificateResponse.keyId()));
+        certificateResponse.getName(), certificateResponse.getKeyId()));
 
 //Sync
 byte[] certificateBackupBlob = {};
-Certificate certificate = certificateClient.restoreCertificate(certificateBackupBlob);
-System.out.printf(" Restored certificate with name %s and id %s", certificate.name(), certificate.id());
+KeyVaultCertificate certificate = certificateClient.restoreCertificateBackup(certificateBackupBlob);
+System.out.printf(" Restored certificate with name %s and id %s", certificate.getName(), certificate.getId());
 ```
 
 ### python
@@ -977,10 +986,13 @@ certificateAsyncClient.createIssuer("issuerName", "providerName")
     });
 
 //Sync
-Issuer issuerToCreate = new Issuer("myissuer", "myProvider")
-    .administrators(Arrays.asList(new Administrator("test", "name", "test@example.com")));
-Issuer returnedIssuer = certificateClient.createIssuer(issuerToCreate);
-System.out.printf("Created Issuer with name %s provider %s", returnedIssuer.name(), returnedIssuer.provider());
+CertificateIssuer issuerToCreate = new CertificateIssuer("myissuer", "myProvider")
+    .setAccountId("testAccount")
+    .setAdministratorContacts(Arrays.asList(new AdministratorContact("test", "name",
+        "test@example.com")));
+CertificateIssuer returnedIssuer = certificateClient.createIssuer(issuerToCreate);
+System.out.printf("Created Issuer with name %s provider %s", returnedIssuer.getName(),
+    returnedIssuer.getProperties().getProvider());
 ```
 
 ### python
@@ -1051,10 +1063,10 @@ certificateAsyncClient.getIssuer("issuerName")
     });
 
 //Sync
-Response<Issuer> issuerResponse = certificateClient.getIssuerWithResponse("issuerName",
+Response<CertificateIssuer> issuerResponse = certificateClient.getIssuerWithResponse("issuerName",
     new Context(key1, value1));
-System.out.printf("Retrieved issuer with name %s and prodier %s", issuerResponse.getValue().name(),
-    issuerResponse.getValue().provider());
+System.out.printf("Retrieved issuer with name %s and prodier %s", issuerResponse.getValue().getName(),
+    issuerResponse.getValue().getProperties().getProvider());
 ```
 
 ### python
@@ -1111,14 +1123,14 @@ async def get_issuer(self, issuer_name: str, **kwargs: "**Any") -> CertificateIs
 ### java
 ```java
 //Async
-certificateAsyncClient.deleteCertificateIssuerWithResponse("issuerName")
+certificateAsyncClient.deleteIssuerWithResponse("issuerName")
     .subscribe(deletedIssuerResponse ->
         System.out.printf("Deleted issuer with name %s %n", deletedIssuerResponse.getValue().name()));
 
 //Sync
-Issuer deletedIssuer = certificateClient.deleteIssuer("certificateName");
-System.out.printf("Deleted certificate issuer with name %s and provider id %s", deletedIssuer.name(),
-    deletedIssuer.provider());
+CertificateIssuer deletedIssuer = certificateClient.deleteIssuer("certificateName");
+System.out.printf("Deleted certificate issuer with name %s and provider id %s", deletedIssuer.getName(),
+    deletedIssuer.getProperties().getProvider());
 ```
 
 ### python
@@ -1169,16 +1181,17 @@ async def delete_issuer(self, issuer_name: str, **kwargs: "**Any") -> Certificat
 ### java
 ```java
 //Async
-certificateAsyncClient.listIssuers()
-    .subscribe(issuerProps -> certificateAsyncClient.getCertificateIssuer(issuerProps)
+certificateAsyncClient.listPropertiesOfIssuers()
+    .subscriberContext(Context.of(key1, value1, key2, value2))
+    .subscribe(issuerProperties -> certificateAsyncClient.getIssuer(issuerProperties.getName())
         .subscribe(issuerResponse -> System.out.printf("Received issuer with name %s and provider %s",
-            issuerResponse.name(), issuerResponse.provider())));
+            issuerResponse.getName(), issuerResponse.getProperties().getProvider())));
 
 //Sync
-for (IssuerProperties issuerProps : certificateClient.listIssuers()) {
-    Issuer retrievedIssuer = certificateClient.getCertificateIssuer(issuerProps);
-    System.out.printf("Received issuer with name %s and provider %s", retrievedIssuer.name(),
-        retrievedIssuer.provider());
+for (IssuerProperties issuer : certificateClient.listPropertiesOfIssuers()) {
+    CertificateIssuer retrievedIssuer = certificateClient.getIssuer(issuer.getName());
+    System.out.printf("Received issuer with name %s and provider %s", retrievedIssuer.getName(),
+        retrievedIssuer.getProperties().getProvider());
 }
 ```
 
@@ -1237,20 +1250,23 @@ def list_properties_of_issuers(self, **kwargs: "**Any") -> AsyncIterable[IssuerP
 ```java
 //Async
 certificateAsyncClient.getIssuer("issuerName")
-    .subscribe(issuer -> {
-        issuer.setAdministrators(Arrays.asList(new Administrator("test", "name", "test@example.com")));
-        certificateAsyncClient.updateCertificateIssuer(issuer)
+    .subscriberContext(Context.of(key1, value1, key2, value2))
+    .subscribe(issuerResponseValue -> {
+        CertificateIssuer issuer = issuerResponseValue;
+        //Update the enabled status of the issuer.
+        issuer.setEnabled(false);
+        certificateAsyncClient.updateIssuer(issuer)
             .subscribe(issuerResponse ->
-                System.out.printf("Updated issuer with name %s, provider %s",
-                    issuerResponse.name(), issuerResponse.provider()));
+                System.out.printf("Issuer's enabled status %s %n",
+                    issuerResponse.isEnabled().toString()));
     });
 
 //Sync
-Issuer returnedIssuer = certificateClient.getIssuer("issuerName");
-returnedIssuer.setAdministrators(Arrays.asList(new Administrator("test", "name", "test@example.com")));
-Issuer updatedIssuer = certificateClient.updateIssuer(returnedIssuer);
-System.out.printf("Updated issuer with name %s, provider %s and account Id %s", updatedIssuer.name(),
-    updatedIssuer.provider(), updatedIssuer.accountId());
+CertificateIssuer returnedIssuer = certificateClient.getIssuer("issuerName");
+returnedIssuer.setAccountId("newAccountId");
+CertificateIssuer updatedIssuer = certificateClient.updateIssuer(returnedIssuer);
+System.out.printf("Updated issuer with name %s, provider %s and account Id %s", updatedIssuer.getName(),
+    updatedIssuer.getProperties().getProvider(), updatedIssuer.getAccountId());
 ```
 
 ### JS/TS
@@ -1332,17 +1348,6 @@ async def get_certificate_operation(self, certificate_name: str, **kwargs: "**An
 
 ## Scenario - Cancel Certificate Operation
 ### Usage
-### java
-```java
-//Async
-certificateAsyncClient.cancelCertificateOperation("certificateName")
-    .subscribe(certificateOperation -> System.out.printf("Certificate operation status %s",
-        certificateOperation.status()));
-
-//Sync
-CertificateOperation certificateOperation = certificateClient.cancelCertificateOperation("certificateName");
-System.out.printf("Certificate Operation status %s", certificateOperation.status());
-```
 
 ### JS/TS
 ```ts
@@ -1436,16 +1441,16 @@ async def delete_certificate_operation(self, certificate_name: str, **kwargs: "*
 ### java
 ```java
 //Async
-Contact contactToAdd = new Contact("user", "useremail@exmaple.com");
-certificateAsyncClient.setContacts(Arrays.asList(contactToAdd)).subscribe(contact ->
-    System.out.printf("Contact name %s and email %s", contact.name(), contact.emailAddress())
+CertificateContact contactToAdd = new CertificateContact("user", "useremail@exmaple.com");
+certificateAsyncClient.setContacts(Arrays.asList(oontactToAdd)).subscribe(contact ->
+    System.out.printf("Contact name %s and email %s", contact.getName(), contact.getEmailAddress())
 );
 
 //Sync
-Contact contactToAdd = new Contact("user", "useremail@exmaple.com");
-for (Contact contact : certificateClient.setContacts(Arrays.asList(contactToAdd))) {
-    System.out.printf("Added contact with name %s and email %s to key vault", contact.name(),
-        contact.emailAddress());
+CertificateContact contactToAdd = new CertificateContact("user", "useremail@exmaple.com");
+for (CertificateContact contact : certificateClient.setContacts(Arrays.asList(contactToAdd))) {
+    System.out.printf("Added contact with name %s and email %s to key vault", contact.getName(),
+        contact.getEmailAddress());
 }
 ```
 
@@ -1493,13 +1498,13 @@ async def create_contacts(
 ```java
 //Async
 certificateAsyncClient.listContacts().subscribe(contact ->
-    System.out.printf("Contact name %s and email %s", contact.name(), contact.emailAddress())
+    System.out.printf("Contact name %s and email %s", contact.getName(), contact.getEmailAddress())
 );
 
 //Sync
-for (Contact contact : certificateClient.listContacts()) {
-    System.out.printf("Added contact with name %s and email %s to key vault", contact.name(),
-        contact.emailAddress());
+for (CertificateContact contact : certificateClient.listContacts(new Context(key1, value1))) {
+    System.out.printf("Added contact with name %s and email %s to key vault", contact.getName(),
+        contact.getEmailAddress());
 }
 ```
 
@@ -1538,13 +1543,13 @@ public async getContacts(options?: RequestOptionsBase): Promise<Contacts>
 ```java
 //Async
 certificateAsyncClient.deleteContacts().subscribe(contact ->
-    System.out.printf("Deleted Contact name %s and email %s", contact.name(), contact.emailAddress())
+    System.out.printf("Deleted Contact name %s and email %s", contact.getName(), contact.getEmailAddress())
 );
 
 //Sync
 for (CertificateContact contact : certificateClient.deleteContacts()) {
-    System.out.printf("Deleted contact with name %s and email %s from key vault", contact.name(),
-        contact.emailAddress());
+    System.out.printf("Deleted contact with name %s and email %s from key vault", contact.getName(),
+        contact.getEmailAddress());
 }
 ```
 

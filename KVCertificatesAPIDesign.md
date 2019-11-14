@@ -16,6 +16,13 @@ The Azure Key Vault Certificate client library enables programmatically managing
 ### API
 
 #### Java
+```java
+CertificateAsyncClient certificateAsyncClient = new CertificateClientBuilder()
+    .credential(new DefaultAzureCredentialBuilder().build())
+    .vaultUrl("https://myvault.vault.azure.net/")
+    .serviceVersion(CertificateServiceVersion.V7_0) .  // This parameter is optional, accepted but not used currently.
+    .buildAsyncClient();
+```
 
 #### .NET
 
@@ -57,6 +64,9 @@ public class CertificateClientOptions : ClientOptions {
 ### API
 
 #### Java
+```java
+public String getVaultUrl();
+```
 
 #### .NET
 ```c#
@@ -79,46 +89,22 @@ n/a
 ### Java
 ```java
 // Async Example
-CertificateClientBuilder builder = new CertificateClientBuilder()
-        .endpoint(<your-vault-url>)
-        .credential(new DefaultAzureCredentialBuilder().build());
-
-CertificateClient certificateClient = builder.buildClient();
-CertificateAsyncClient certificateAsyncClient = builder.buildAsyncClient();
-
-CertificatePolicy policy = new CertificatePolicy("Self", "CN=SelfSignedJavaPkcs12")
-                                .setValidityInMonths(24)
-                                .subjectAlternativeNames(SubjectAlternativeNames.fromEmails(Arrays.asList("wow@gmail.com")));
-
-//Creates a certificate and polls on its progress.
-Poller<CertificateOperation, Certificate> createCertPoller = certificateAsyncClient.createCertificate("certificateName", policy);
-
-createCertPoller
-    .getObserver()
+CertificatePolicy certPolicy = new CertificatePolicy("Self", "CN=SelfSignedJavaPkcs12");
+certificateAsyncClient.beginCreateCertificate("certificateName", certPolicy)
     .subscribe(pollResponse -> {
         System.out.println("---------------------------------------------------------------------------------");
         System.out.println(pollResponse.getStatus());
-        System.out.println(pollResponse.getValue().status());
-        System.out.println(pollResponse.getValue().statusDetails());
+        System.out.println(pollResponse.getValue().getStatus());
+        System.out.println(pollResponse.getValue().getStatusDetails());
     });
-
-    // Do other ops ....
-    // Cannot move forward without cert at this point
-    Mono<Certificate> certificate = createCertPoller.block();
-
-
+    
 // Sync example
-// Blocks until the cert is created.
-Certificate myCertificate = certificateClient.createCertificate(String name);
+SyncPoller<CertificateOperation, KeyVaultCertificate> certificatePoller = certificateClient
+    .beginCreateCertificate("certificateName", certificatePolicy);
+certificatePoller.waitUntil(LongRunningOperationStatus.SUCCESSFULLY_COMPLETED);
+KeyVaultCertificate certificate = certificatePoller.getFinalResult();
+System.out.printf("Certificate created with name %s", certificate.getName());
 
-//By default blocks until certificate is created, unless a timeout is specified as an optional parameter.
-try {
-    myCertificate = certificateClient.createCertificate("certificateName",
-    policy, Duration.ofSeconds(60));
-} catch (IllegalStateException e) {
-    // Certificate wasn't created in the specified duration.
-    // Log / Handle here
-}
 ```
 
 ### .NET
@@ -189,17 +175,12 @@ Debug.WriteLine($"Certificate was returned with name {certificate.Name} which ex
 ### API
 ### Java
 ```java
-Poller<CertificateOperation, Certificate> createCertificate(String name);
-Poller<CertificateOperation, Certificate> createCertificate(String name, CertificatePolicy policy);
-Poller<CertificateOperation, Certificate> createCertificate(String name, CertificatePolicy policy, boolean enabled, Map<String, String> tags);
 
+public PollerFlux<CertificateOperation, KeyVaultCertificate> beginCreateCertificate(String name, CertificatePolicy policy, boolean enabled, Map<String, String> tags) {}
+public PollerFlux<CertificateOperation, KeyVaultCertificate> beginCreateCertificate(String name, CertificatePolicy policy) {}
 
-Certificate createCertificate(String name);
-Certificate createCertificate(String name, Duration timeout);
-Certificate createCertificate(String name, CertificatePolicy policy);
-Certificate createCertificate(String name, CertificatePolicy policy, Duration timeout);
-Certificate createCertificate(String name, CertificatePolicy policy, Map<String, String> tags);
-Certificate createCertificate(String name, CertificatePolicy policy, Map<String, String> tags, Duration timeout);
+public SyncPoller<CertificateOperation, KeyVaultCertificate> beginCreateCertificate(String name, CertificatePolicy policy, Map<String, String> tags) {}
+public SyncPoller<CertificateOperation, KeyVaultCertificate> beginCreateCertificate(String name, CertificatePolicy policy) {}
 ```
 
 ### .NET
@@ -242,15 +223,16 @@ public virtual Task<CertificateOperation> StartCreateCertificateAsync(string cer
 ### Java
 ```java
 //Retrieve asynchronously
-certificateAsyncClient.getCertificate("certificateName", "certificateVersion")
+certificateAsyncClient.getCertificateVersion("certificateName", "certificateVersion")
     .subscribe(certificateResponse ->
         System.out.printf("Certificate is returned with name %s and secretId %s %n", certificateResponse.name(),
             certificateResponse.secretId()));
 
 // Retrieve synchronously
-Certificate certificate = certificateClient.getCertificateWithPolicy("certificateName");
-System.out.printf("Recevied certificate with name %s and version %s and secret id", certificate.name(),
-    certificate.version(), certificate.secretId());
+KeyVaultCertificateWithPolicy certificate = certificateClient.getCertificate("certificateName");
+System.out.printf("Recevied certificate with name %s and version %s and secret id",
+    certificate.getProperties().getName(),
+    certificate.getProperties().getVersion(), certificate.getSecretId());
 ```
 
 ### Python
@@ -272,16 +254,16 @@ print("Certificate with name '{0}' was found'.".format(bank_certificate.name))
 ### Java
 ```java
 // Async API
-public Mono<Certificate> getCertificateWithPolicy(String name);
-public Mono<Certificate> getCertificate(String name, String version);
-public Mono<Response<Certificate>> getCertificateWithResponse(String name, String version);
-public Mono<Certificate> getCertificate(CertificateProperties certificateProperties);
+public Mono<KeyVaultCertificateWithPolicy> getCertificate(String name) {}
+public Mono<Response<KeyVaultCertificateWithPolicy>> getCertificateWithResponse(String name) {}
+public Mono<Response<KeyVaultCertificate>> getCertificateVersionWithResponse(String name, String version) {}
+public Mono<KeyVaultCertificate> getCertificateVersion(String name, String version) {}
 
-//Sync API
-public Certificate getCertificateWithPolicy(String name);
-public Certificate getCertificate(CertificateProperties certificateProperties);
-public Certificate getCertificate(String name, String version);
-public Response<Certificate> getCertificateWithResponse(String name, String version, Context context);
+//Sync API    
+public KeyVaultCertificateWithPolicy getCertificate(String name) {}
+public Response<KeyVaultCertificateWithPolicy> getCertificateWithResponse(String name) {}
+public Response<KeyVaultCertificate> getCertificateVersionWithResponse(String name, String version, Context context) {}
+public KeyVaultCertificate getCertificateVersion(String name, String version) {}
 ```
 
 ### .NET
@@ -321,13 +303,14 @@ self, certificate_name: str, version: str, **kwargs: "**Any"
 ```java
 //Async
 certificateAsyncClient.getCertificatePolicy("certificateName")
+    .subscriberContext(Context.of(key1, value1, key2, value2))
     .subscribe(policy ->
         System.out.printf("Certificate policy is returned with issuer name %s and subject name %s %n",
-            policy.issuerName(), policy.subjectName()));
+            policy.getIssuerName(), policy.getSubjectName()));
 
 //Sync
 CertificatePolicy policy = certificateClient.getCertificatePolicy("certificateName");
-System.out.printf("Received policy with subject name %s", policy.subjectName());
+System.out.printf("Received policy with subject name %s", policy.getSubjectName());
 ```
 
 ### JS/TS
@@ -339,12 +322,11 @@ console.log(policy);
 ### API
 ### Java
 ```java
-public Mono<CertificatePolicy> getCertificatePolicy(String name);
-public Mono<Response<CertificatePolicy>> getCertificatePolicyWithResponse(String name);
+public Mono<CertificatePolicy> getCertificatePolicy(String name) {}
+public Mono<Response<CertificatePolicy>> getCertificatePolicyWithResponse(String name) {}
 
-
-public CertificatePolicy getCertificatePolicy(String name);
-public Response<CertificatePolicy> getCertificatePolicyWithResponse(String name, Context context);
+public CertificatePolicy getCertificatePolicy(String certificateName) {}
+public Response<CertificatePolicy> getCertificatePolicyWithResponse(String certificateName, Context context) {}
 ```
 
 ### .NET
@@ -373,15 +355,16 @@ Question: Updating Certificate via Properties vs setting fields.
 ```java
 
 //Async
-certificateAsyncClient.getCertificateWithPolicy("certificateName")
+certificateAsyncClient.getCertificate("certificateName")
+    .subscriberContext(Context.of(key1, value1, key2, value2))
     .subscribe(certificateResponseValue -> {
-        CertificateProperties certificateProps = certificateResponseValue.getProperties();
+        KeyVaultCertificate certificate = certificateResponseValue;
         //Update enabled status of the certificate
-        certificateProps.setEnabled(false);
-        certificateAsyncClient.updateCertificateProperties(certificateProps)
+        certificate.getProperties().setEnabled(false);
+        certificateAsyncClient.updateCertificateProperties(certificate.getProperties())
             .subscribe(certificateResponse ->
                 System.out.printf("Certificate's enabled status %s %n",
-                    certificateResponse.getProperties().getEnabled().toString()));
+                    certificateResponse.getProperties().isEnabled().toString()));
     });
 
 //Sync
@@ -447,11 +430,13 @@ await client.updateCertificate("MyCertificate", version, {
 ### API
 ### Java
 ```java
-public Mono<Certificate> updateCertificateProperties(CertificateProperties properties);
-public Mono<Response<Certificate>> updateCertificatePropertiesWithResponse(CertificateProperties certificateProperties);
 
-public Certificate updateCertificateProperties(CertificateProperties properties);
-public Response<Certificate> updateCertificatePropertiesWithResponse(CertificateBase certificate, Context context);
+public Mono<KeyVaultCertificate> updateCertificateProperties(CertificateProperties certificateProperties) {}
+public Mono<Response<KeyVaultCertificate>> updateCertificatePropertiesWithResponse(CertificateProperties certificateProperties) {}
+    
+    
+public KeyVaultCertificate updateCertificateProperties(CertificateProperties certificateProperties) {}
+public Response<KeyVaultCertificate> updateCertificatePropertiesWithResponse(CertificateProperties certificateProperties, Context context) {}
 ```
 
 ### .NET
@@ -495,7 +480,7 @@ certificateAsyncClient.getCertificatePolicy("certificateName")
 
 // Sync
 CertificatePolicy certificatePolicy = certificateClient.getCertificatePolicy("certificateName");
-// Update the certificate policy cert transparency property.
+// Update the certificate policy cert validity property.
 certificatePolicy.setValidityInMonths(24);
 CertificatePolicy updatedCertPolicy = certificateClient.updateCertificatePolicy("certificateName",
     certificatePolicy);
@@ -505,12 +490,11 @@ System.out.printf("Updated Certificate Policy validity %d", updatedCertPolicy.ge
 ### API
 ### Java
 ```java
-Mono<CertificatePolicy> updateCertificatePolicy(String certificateName, CertificatePolicy policy);
-public Mono<Response<CertificatePolicy>> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy);
+public Mono<CertificatePolicy> updateCertificatePolicy(String certificateName, CertificatePolicy policy) {}
+public Mono<Response<CertificatePolicy>> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy) {}
 
-public CertificatePolicy updateCertificatePolicy(String certificateName, CertificatePolicy policy);
-public Response<CertificatePolicy> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy, Context context);
-
+public CertificatePolicy updateCertificatePolicy(String certificateName, CertificatePolicy policy) {}
+public Response<CertificatePolicy> updateCertificatePolicyWithResponse(String certificateName, CertificatePolicy policy, Context context) {}
 ```
 
 ### .NET
@@ -566,13 +550,9 @@ const deletedCertificate = await deletePoller.pollUntilDone();
 ### API
 ### Java
 ```java
-public Mono<DeletedCertificate> deleteCertificate(String name);
-public Mono<Response<DeletedCertificate>> deleteCertificateWithResponse(String name);
+public PollerFlux<DeletedCertificate, Void> beginDeleteCertificate(String name) {}
 
-
-public DeletedCertificate deleteCertificate(String name);
-public Response<DeletedCertificate> deleteCertificateWithResponse(String name, Context context);
-
+public SyncPoller<DeletedCertificate, Void> beginDeleteCertificate(String name) {}
 ```
 
 ### .NET
@@ -634,11 +614,13 @@ client.getDeletedCertificate("MyDeletedCertificate");
 ### API
 ### Java
 ```java
-public Mono<DeletedCertificate> getDeletedCertificate(String name);
-public Mono<Response<DeletedCertificate>> getDeletedCertificateWithResponse(String name);
-
-public DeletedCertificate getDeletedCertificate(String name);
-public Response<DeletedCertificate> getDeletedCertificateWithResponse(String name, Context context);
+//Async
+public Mono<DeletedCertificate> getDeletedCertificate(String name) {}
+public Mono<Response<DeletedCertificate>> getDeletedCertificateWithResponse(String name) {}
+    
+//Sync
+public DeletedCertificate getDeletedCertificate(String name) {}
+public Response<DeletedCertificate> getDeletedCertificateWithResponse(String name, Context context) {}
 ```
 
 ### .NET
@@ -663,14 +645,21 @@ async def get_deleted_certificate(self, certificate_name: str, **kwargs: "**Any"
 ### Java
 ```java
 //Async
-certificateAsyncClient.recoverDeletedCertificate("deletedCertificateName")
-    .subscribe(recoveredCert ->
-        System.out.printf("Recovered Certificate with name %s %n", recoveredCert.name()));
-
+certificateAsyncClient.beginRecoverDeletedCertificate("deletedCertificateName")
+    .subscribe(pollResponse -> {
+        System.out.println("Recovery Status: " + pollResponse.getStatus().toString());
+        System.out.println("Recover Certificate Name: " + pollResponse.getValue().getName());
+        System.out.println("Recover Certificate Id: " + pollResponse.getValue().getId());
+    });
+    
 //Sync
-Certificate certificate = certificateClient.recoverDeletedCertificate("deletedCertificateName");
-System.out.printf(" Recovered Deleted certificate with name %s and id %s", certificate.name(),
-    certificate.id());
+SyncPoller<KeyVaultCertificate, Void> recoverCertPoller = certificateClient
+    .beginRecoverDeletedCertificate("deletedCertificateName");
+// Recovered certificate is accessible as soon as polling beings
+PollResponse<KeyVaultCertificate> pollResponse = recoverCertPoller.poll();
+System.out.printf(" Recovered Deleted certificate with name %s and id %s", pollResponse.getValue()
+        .getProperties().getName(), pollResponse.getValue().getProperties().getId());
+recoverCertPoller.waitForCompletion();
 ```
 ### JS/TS
  ```ts
@@ -681,11 +670,9 @@ const certificateWithPolicy = await recoverPoller.pollUntilDone();
 ### API
 ### Java
 ```java
-public Mono<Certificate> recoverDeletedCertificate(String name);
-public Mono<Response<Certificate>> recoverDeletedCertificate(String name);
+public PollerFlux<KeyVaultCertificate, Void> beginRecoverDeletedCertificate(String name) {}
 
-public Certificate recoverDeletedCertificate(String name);
-public Response<Certificate> recoverDeletedCertificate(String name);
+public SyncPoller<KeyVaultCertificate, Void> beginRecoverDeletedCertificate(String name) {}
 ```
 
 ### .NET
@@ -760,8 +747,8 @@ await client.purgeDeletedCertificate("MyCertificate");
 public Mono<Void> purgeDeletedCertificate(String name);
 public Mono<Response<Void>> purgeDeletedCertificateWithResponse(String name);
 
-public void purgeDeletedCertificate(String name);
-public Response<Void> purgeDeletedCertificateWithResponse(String name, Context context);
+public void purgeDeletedCertificate(String name) {}
+public Response<Void> purgeDeletedCertificateWithResponse(String name, Context context) {}
 ```
 
 ### .NET
@@ -850,15 +837,15 @@ async def backup_certificate(self, certificate_name: str, **kwargs: "**Any") -> 
 ### Java
 ```java
 //Async
-certificateAsyncClient.restoreCertificate(certificateBackupByteArray)
+certificateAsyncClient.restoreCertificateBackup(certificateBackupByteArray)
     .subscriberContext(Context.of(key1, value1, key2, value2))
     .subscribe(certificateResponse -> System.out.printf("Restored Certificate with name %s and key id %s %n",
-        certificateResponse.name(), certificateResponse.keyId()));
+        certificateResponse.getName(), certificateResponse.getKeyId()));
 
 //Sync
 byte[] certificateBackupBlob = {};
-Certificate certificate = certificateClient.restoreCertificate(certificateBackupBlob);
-System.out.printf(" Restored certificate with name %s and id %s", certificate.name(), certificate.id());
+KeyVaultCertificate certificate = certificateClient.restoreCertificateBackup(certificateBackupBlob);
+System.out.printf(" Restored certificate with name %s and id %s", certificate.getName(), certificate.getId());
 ```
 
 ### python
@@ -886,12 +873,11 @@ await client.restoreCertificateBackup(backup.value!);
 ### API
 ### Java
 ```java
-public Mono<Certificate> restoreCertificate(byte[] backup);
-public Mono<Response<Certificate>> restoreCertificateWithResponse(byte[] backup);
+public Mono<KeyVaultCertificate> restoreCertificateBackup(byte[] backup) {}
+public Mono<Response<KeyVaultCertificate>> restoreCertificateBackupWithResponse(byte[] backup) {}
 
-
-public Certificate restoreCertificate(byte[] backup);
-public Response<Certificate> restoreCertificateWithResponse(byte[] backup, Context context)
+public KeyVaultCertificate restoreCertificateBackup(byte[] backup) {}
+public Response<KeyVaultCertificate> restoreCertificateBackupWithResponse(byte[] backup, Context context) {}
 ```
 
 ### .NET
@@ -951,11 +937,11 @@ for await (const page of client.listPropertiesOfCertificates({ includePending: t
 ### API
 ### Java
 ```java
-public PagedFlux<CertificateProperties> listCertificates(Boolean includePending);
-public PagedFlux<CertificateProperties> listCertificates();
+public PagedFlux<CertificateProperties> listPropertiesOfCertificates(Boolean includePending) {}
+public PagedFlux<CertificateProperties> listPropertiesOfCertificates() {}
 
-public PagedIterable<CertificateProperties> listCertificates();
-public PagedIterable<CertificateProperties> listCertificates(boolean includePending, Context context);
+public PagedIterable<CertificateProperties> listPropertiesOfCertificates() {}
+public PagedIterable<CertificateProperties> listPropertiesOfCertificates(boolean includePending, Context context) {}
 ```
 
 ### .NET
@@ -1019,10 +1005,10 @@ for await (const page of client.listPropertiesOfCertificateVersions(certificateN
 ### API
 ### Java
 ```java
-public PagedFlux<CertificateProperties> listCertificateVersions(String name);
-
-public PagedIterable<CertificateProperties> listCertificateVersions(String name);
-public PagedIterable<CertificateProperties> listCertificateVersions(String name, Context context);
+public PagedFlux<CertificateProperties> listPropertiesOfCertificateVersions(String name) {}
+    
+public PagedIterable<CertificateProperties> listPropertiesOfCertificateVersions(String name) {}
+public PagedIterable<CertificateProperties> listPropertiesOfCertificateVersions(String name, Context context) {}
 ```
 
 ### .NET
@@ -1119,10 +1105,13 @@ certificateAsyncClient.createIssuer("issuerName", "providerName")
     });
 
 //Sync
-Issuer issuerToCreate = new Issuer("myissuer", "myProvider")
-    .administrators(Arrays.asList(new Administrator("test", "name", "test@example.com")));
-Issuer returnedIssuer = certificateClient.createIssuer(issuerToCreate);
-System.out.printf("Created Issuer with name %s provider %s", returnedIssuer.name(), returnedIssuer.provider());
+CertificateIssuer issuerToCreate = new CertificateIssuer("myissuer", "myProvider")
+    .setAccountId("testAccount")
+    .setAdministratorContacts(Arrays.asList(new AdministratorContact("test", "name",
+        "test@example.com")));
+CertificateIssuer returnedIssuer = certificateClient.createIssuer(issuerToCreate);
+System.out.printf("Created Issuer with name %s provider %s", returnedIssuer.getName(),
+    returnedIssuer.getProperties().getProvider());
 ```
 
 ### python
@@ -1152,13 +1141,13 @@ await client.createIssuer("IssuerName", "Provider");
 ### API
 ### Java
 ```java
-public Mono<Issuer> createIssuer(String name, String provider);
-public Mono<Issuer> createIssuer(Issuer issuer);
-public Mono<Response<Issuer>> createIssuerWithResponse(Issuer issuer);
+public Mono<CertificateIssuer> createIssuer(String name, String provider);
+public Mono<CertificateIssuer> createIssuer(CertificateIssuer issuer);
+public Mono<Response<CertificateIssuer>> createIssuerWithResponse(CertificateIssuer issuer);
 
-public Issuer createIssuer(String name, String provider);
-public Issuer createIssuer(Issuer issuer);
-public Response<Issuer> createIssuerWithResponse(Issuer issuer, Context context)
+public CertificateIssuer createIssuer(String name, String provider);
+public CertificateIssuer createIssuer(CertificateIssuer issuer);
+public Response<CertificateIssuer> createIssuerWithResponse(CertificateIssuer issuer, Context context)
 ```
 
 ### .NET
@@ -1193,10 +1182,10 @@ certificateAsyncClient.getIssuer("issuerName")
     });
 
 //Sync
-Response<Issuer> issuerResponse = certificateClient.getIssuerWithResponse("issuerName",
+Response<CertificateIssuer> issuerResponse = certificateClient.getIssuerWithResponse("issuerName",
     new Context(key1, value1));
-System.out.printf("Retrieved issuer with name %s and prodier %s", issuerResponse.getValue().name(),
-    issuerResponse.getValue().provider());
+System.out.printf("Retrieved issuer with name %s and prodier %s", issuerResponse.getValue().getName(),
+    issuerResponse.getValue().getProperties().getProvider());
 ```
 
 ### python
@@ -1224,13 +1213,11 @@ console.log(certificateIssuer);
 ### API
 ### Java
 ```java
-public Mono<Response<Issuer>> getIssuerWithResponse(String name);
-public Mono<Issuer> getIssuer(String name);
-public Mono<Issuer> getIssuer(IssuerProperties issuerProperties);
+public Mono<Response<CertificateIssuer>> getIssuerWithResponse(String name);
+public Mono<CertificateIssuer> getIssuer(String name);
 
-public Response<Issuer> getIssuerWithResponse(String name, Context context);
-public Issuer getIssuer(String name);
-public Issuer getIssuer(IssuerProperties issuerProperties);
+public Response<CertificateIssuer> getIssuerWithResponse(String name, Context context);
+public CertificateIssuer getIssuer(String name);
 ```
 
 ### .NET
@@ -1255,14 +1242,14 @@ async def get_issuer(self, issuer_name: str, **kwargs: "**Any") -> CertificateIs
 ### java
 ```java
 //Async
-certificateAsyncClient.deleteCertificateIssuerWithResponse("issuerName")
+certificateAsyncClient.deleteIssuerWithResponse("issuerName")
     .subscribe(deletedIssuerResponse ->
         System.out.printf("Deleted issuer with name %s %n", deletedIssuerResponse.getValue().name()));
 
 //Sync
-Issuer deletedIssuer = certificateClient.deleteIssuer("certificateName");
-System.out.printf("Deleted certificate issuer with name %s and provider id %s", deletedIssuer.name(),
-    deletedIssuer.provider());
+CertificateIssuer deletedIssuer = certificateClient.deleteIssuer("certificateName");
+System.out.printf("Deleted certificate issuer with name %s and provider id %s", deletedIssuer.getName(),
+    deletedIssuer.getProperties().getProvider());
 ```
 
 ### python
@@ -1281,12 +1268,12 @@ await client.deleteIssuer("IssuerName");
 ### API
 ### Java
 ```java
-public Mono<Response<Issuer>> deleteIssuerWithResponse(String name);
-public Mono<Issuer> deleteIssuer(String name);
+public Mono<Response<CertificateIssuer>> deleteIssuerWithResponse(String name);
+public Mono<CertificateIssuer> deleteIssuer(String name);
 
 
-public Response<Issuer> deleteIssuerWithResponse(String name, Context context);
-public Issuer deleteIssuer(String name);
+public Response<CertificateIssuer> deleteIssuerWithResponse(String name, Context context);
+public CertificateIssuer deleteIssuer(String name);
 ```
 
 ### .NET
@@ -1313,16 +1300,17 @@ async def delete_issuer(self, issuer_name: str, **kwargs: "**Any") -> Certificat
 ### java
 ```java
 //Async
-certificateAsyncClient.listIssuers()
-    .subscribe(issuerProps -> certificateAsyncClient.getCertificateIssuer(issuerProps)
+certificateAsyncClient.listPropertiesOfIssuers()
+    .subscriberContext(Context.of(key1, value1, key2, value2))
+    .subscribe(issuerProperties -> certificateAsyncClient.getIssuer(issuerProperties.getName())
         .subscribe(issuerResponse -> System.out.printf("Received issuer with name %s and provider %s",
-            issuerResponse.name(), issuerResponse.provider())));
+            issuerResponse.getName(), issuerResponse.getProperties().getProvider())));
 
 //Sync
-for (IssuerProperties issuerProps : certificateClient.listIssuers()) {
-    Issuer retrievedIssuer = certificateClient.getCertificateIssuer(issuerProps);
-    System.out.printf("Received issuer with name %s and provider %s", retrievedIssuer.name(),
-        retrievedIssuer.provider());
+for (IssuerProperties issuer : certificateClient.listPropertiesOfIssuers()) {
+    CertificateIssuer retrievedIssuer = certificateClient.getIssuer(issuer.getName());
+    System.out.printf("Received issuer with name %s and provider %s", retrievedIssuer.getName(),
+        retrievedIssuer.getProperties().getProvider());
 }
 ```
 
@@ -1359,10 +1347,10 @@ for await (const page of client.listPropertiesOfIssuers().byPage()) {
 ### API
 ### Java
 ```java
-public PagedFlux<IssuerProperties> listIssuers();
+public PagedFlux<IssuerProperties> listPropertiesOfIssuers() {}
 
-public PagedIterable<IssuerProperties> listIssuers();
-public PagedIterable<IssuerPropeties> listIssuers(Context context);
+public PagedIterable<IssuerProperties> listPropertiesOfIssuers() {}
+public PagedIterable<IssuerProperties> listPropertiesOfIssuers(Context context) {}
 ```
 
 ### .NET
@@ -1387,20 +1375,23 @@ def list_properties_of_issuers(self, **kwargs: "**Any") -> AsyncIterable[IssuerP
 ```java
 //Async
 certificateAsyncClient.getIssuer("issuerName")
-    .subscribe(issuer -> {
-        issuer.setAdministrators(Arrays.asList(new Administrator("test", "name", "test@example.com")));
-        certificateAsyncClient.updateCertificateIssuer(issuer)
+    .subscriberContext(Context.of(key1, value1, key2, value2))
+    .subscribe(issuerResponseValue -> {
+        CertificateIssuer issuer = issuerResponseValue;
+        //Update the enabled status of the issuer.
+        issuer.setEnabled(false);
+        certificateAsyncClient.updateIssuer(issuer)
             .subscribe(issuerResponse ->
-                System.out.printf("Updated issuer with name %s, provider %s",
-                    issuerResponse.name(), issuerResponse.provider()));
+                System.out.printf("Issuer's enabled status %s %n",
+                    issuerResponse.isEnabled().toString()));
     });
 
 //Sync
-Issuer returnedIssuer = certificateClient.getIssuer("issuerName");
-returnedIssuer.setAdministrators(Arrays.asList(new Administrator("test", "name", "test@example.com")));
-Issuer updatedIssuer = certificateClient.updateIssuer(returnedIssuer);
-System.out.printf("Updated issuer with name %s, provider %s and account Id %s", updatedIssuer.name(),
-    updatedIssuer.provider(), updatedIssuer.accountId());
+CertificateIssuer returnedIssuer = certificateClient.getIssuer("issuerName");
+returnedIssuer.setAccountId("newAccountId");
+CertificateIssuer updatedIssuer = certificateClient.updateIssuer(returnedIssuer);
+System.out.printf("Updated issuer with name %s, provider %s and account Id %s", updatedIssuer.getName(),
+    updatedIssuer.getProperties().getProvider(), updatedIssuer.getAccountId());
 ```
 
 ### JS/TS
@@ -1413,11 +1404,11 @@ await client.updateIssuer("IssuerName", {
 ### API
 ### Java
 ```java
-public Mono<Issuer> updateIssuer(Issuer issuer);
-public Mono<Response<Issuer>> updateIssuerWithResponse(Issuer issuer);
+public Mono<CertificateIssuer> updateIssuer(CertificateIssuer issuer);
+public Mono<Response<CertificateIssuer>> updateIssuerWithResponse(CertificateIssuer issuer);
 
-public Issuer updateIssuer(Issuer issuer);
-public Response<Issuer> updateIssuerWithResponse(Issuer issuer, Context context);
+public CertificateIssuer updateIssuer(CertificateIssuer issuer);
+public Response<CertificateIssuer> updateIssuerWithResponse(CertificateIssuer issuer, Context context);
 ```
 
 ### .NET
@@ -1440,7 +1431,6 @@ async def update_issuer(self, issuer_name: str, **kwargs: "**Any") -> Certificat
 
 
 ## Scenario - Get Certificate Operation
-Question: Do we need this, if we have LRO/Poller support ?
 
 ### Usage
 ### JS/TS
@@ -1456,10 +1446,12 @@ const poller = await client.getCertificateOperation("MyCertificate");
 const certificateOperation = poller.getResult();
 console.log(certificateOperation);
 ```
-
+### API
 ### Java
 ```java
+public PollerFlux<CertificateOperation, KeyVaultCertificate> getCertificateOperation(String name) {}
 
+public SyncPoller<CertificateOperation, KeyVaultCertificate> getCertificateOperation(String name) {}
 ```
 
 ### .NET
@@ -1481,17 +1473,6 @@ async def get_certificate_operation(self, certificate_name: str, **kwargs: "**An
 
 ## Scenario - Cancel Certificate Operation
 ### Usage
-### java
-```java
-//Async
-certificateAsyncClient.cancelCertificateOperation("certificateName")
-    .subscribe(certificateOperation -> System.out.printf("Certificate operation status %s",
-        certificateOperation.status()));
-
-//Sync
-CertificateOperation certificateOperation = certificateClient.cancelCertificateOperation("certificateName");
-System.out.printf("Certificate Operation status %s", certificateOperation.status());
-```
 
 ### JS/TS
 ```ts
@@ -1516,6 +1497,8 @@ await operationPoller.cancel();
 ### API
 ### Java
 ```java
+
+--------- REMOVED------------------
 public Mono<CertificateOperation> cancelCertificateOperation(String certificateName);
 public Mono<Response<CertificateOperation>> cancelCertificateOperation(String certificateName);
 
@@ -1600,16 +1583,16 @@ async def delete_certificate_operation(self, certificate_name: str, **kwargs: "*
 ### java
 ```java
 //Async
-Contact contactToAdd = new Contact("user", "useremail@exmaple.com");
-certificateAsyncClient.setContacts(Arrays.asList(contactToAdd)).subscribe(contact ->
-    System.out.printf("Contact name %s and email %s", contact.name(), contact.emailAddress())
+CertificateContact contactToAdd = new CertificateContact("user", "useremail@exmaple.com");
+certificateAsyncClient.setContacts(Arrays.asList(oontactToAdd)).subscribe(contact ->
+    System.out.printf("Contact name %s and email %s", contact.getName(), contact.getEmailAddress())
 );
 
 //Sync
-Contact contactToAdd = new Contact("user", "useremail@exmaple.com");
-for (Contact contact : certificateClient.setContacts(Arrays.asList(contactToAdd))) {
-    System.out.printf("Added contact with name %s and email %s to key vault", contact.name(),
-        contact.emailAddress());
+CertificateContact contactToAdd = new CertificateContact("user", "useremail@exmaple.com");
+for (CertificateContact contact : certificateClient.setContacts(Arrays.asList(contactToAdd))) {
+    System.out.printf("Added contact with name %s and email %s to key vault", contact.getName(),
+        contact.getEmailAddress());
 }
 ```
 
@@ -1625,10 +1608,10 @@ await client.setContacts([{
 ### API
 ### Java
 ```java
-public PagedFlux<Contact> setContacts(List<Contact> contacts);
+public PagedFlux<CertificateContact> setContacts(List<CertificateContact> contacts);
 
-public PagedIterable<Contact> setContacts(List<Contact> contacts);
-public PagedIterable<Contact> setContacts(List<Contact> contacts, Context context);
+public PagedIterable<CertificateContact> setContacts(List<CertificateContact> contacts);
+public PagedIterable<CertificateContact> setContacts(List<CertificateContact> contacts, Context context);
 ```
 
 ### .NET
@@ -1656,13 +1639,13 @@ async def create_contacts(
 ```java
 //Async
 certificateAsyncClient.listContacts().subscribe(contact ->
-    System.out.printf("Contact name %s and email %s", contact.name(), contact.emailAddress())
+    System.out.printf("Contact name %s and email %s", contact.getName(), contact.getEmailAddress())
 );
 
 //Sync
-for (Contact contact : certificateClient.listContacts()) {
-    System.out.printf("Added contact with name %s and email %s to key vault", contact.name(),
-        contact.emailAddress());
+for (CertificateContact contact : certificateClient.listContacts(new Context(key1, value1))) {
+    System.out.printf("Added contact with name %s and email %s to key vault", contact.getName(),
+        contact.getEmailAddress());
 }
 ```
 
@@ -1675,10 +1658,10 @@ console.log(getResponse.contactList!);
 ### API
 ### Java
 ```java
-public PagedFlux<Contact> listContacts();
+public PagedFlux<CertificateContact> listContacts();
 
-public PagedIterable<Contact> listContacts();
-public PagedIterable<Contact> listContacts(Context context);
+public PagedIterable<CertificateContact> listContacts();
+public PagedIterable<CertificateContact> listContacts(Context context);
 ```
 
 ### .NET
@@ -1701,13 +1684,13 @@ public async getContacts(options: GetContactsOptions = {}): Promise<CertificateC
 ```java
 //Async
 certificateAsyncClient.deleteContacts().subscribe(contact ->
-    System.out.printf("Deleted Contact name %s and email %s", contact.name(), contact.emailAddress())
+    System.out.printf("Deleted Contact name %s and email %s", contact.getName(), contact.getEmailAddress())
 );
 
 //Sync
-for (Contact contact : certificateClient.deleteContacts()) {
-    System.out.printf("Deleted contact with name %s and email %s from key vault", contact.name(),
-        contact.emailAddress());
+for (CertificateContact contact : certificateClient.deleteContacts()) {
+    System.out.printf("Deleted contact with name %s and email %s from key vault", contact.getName(),
+        contact.getEmailAddress());
 }
 ```
 
@@ -1720,10 +1703,10 @@ await client.deleteContacts();
 
 ### Java
 ```java
-public PagedFlux<Contact> deleteContacts();
+public PagedFlux<CertificateContact> deleteContacts();
 
-public PagedIterable<Contact> deleteContacts();
-public PagedIterable<Contact> deleteContacts(Context context);
+public PagedIterable<CertificateContact> deleteContacts();
+public PagedIterable<CertificateContact> deleteContacts(Context context);
 ```
 
 ### .NET
@@ -1771,19 +1754,14 @@ const base64Crt = fs.readFileSync("test.crt").toString().split("\n").slice(1, -1
 
 await client.mergeCertificate(certificateName, [Buffer.from(base64Crt)]);
 ```
-
+### API
 ### Java
 ```java
-public Mono<Certificate> mergeCertificate(String name, List<byte[]> x509Certificates);
-public Mono<Response<Certificate>> mergeCertificateWithResponse(String name, List<byte[]> x509Certificates);
-public Mono<Certificate> mergeCertificate(MergeCertificateOptions mergeCertificateConfig);
-public Mono<Response<Certificate>> mergeCertificateWithResponse(MergeCertificateOptions mergeCertificateConfig);
+public Mono<KeyVaultCertificate> mergeCertificate(MergeCertificateOptions mergeCertificateOptions);
+public Mono<Response<KeyVaultCertificate>> mergeCertificateWithResponse(MergeCertificateOptions mergeCertificateOptions);
 
-
-public Certificate mergeCertificate(String name, List<byte[]> x509Certificates);
-public Response<Certificate> mergeCertificateWithResponse(String name, List<byte[]> x509Certificates, Context context);
-public Certificate mergeCertificate(MergeCertificateOptions mergeCertificateConfig);
-public Response<Certificate> mergeCertificateWithResponse(MergeCertificateOptions mergeCertificateConfig, Context context)
+public KeyVaultCertificate mergeCertificate(MergeCertificateOptions mergeCertificateOptions) {}
+public Response<KeyVaultCertificate> mergeCertificateWithResponse(MergeCertificateOptions mergeCertificateOptions, Context context) {}
 ```
 
 ### .NET
@@ -1817,8 +1795,11 @@ await client.importCertificate("MyCertificate", base64EncodedCertificate);
 
 ### Java
 ```java
-public Mono<Response<Certificate>> importCertificate(CertificateImport certificateImport);
-public Response<Certificate> importCertificate(CertificateImport certificateImport);
+public Mono<KeyVaultCertificate> importCertificate(CertificateImportOptions importOptions) {}
+public Mono<Response<KeyVaultCertificate>> importCertificateWithResponse(CertificateImportOptions importOptions) {}
+
+public KeyVaultCertificate importCertificate(CertificateImportOptions importOptions) {}
+public Response<KeyVaultCertificate> importCertificateWithResponse(CertificateImportOptions importOptions, Context context) {}
 ```
 
 ### .NET
@@ -1859,7 +1840,15 @@ public class KeyVaultCertificate : IJsonDeserializable {
 
 ### Java
 ```java
-
+public class KeyVaultCertificate {
+    public CertificateProperties getProperties() {}
+    public KeyVaultCertificate setProperties(CertificateProperties properties) {}
+    public String getId() {}
+    public String getName() {}
+    public String getKeyId() {}
+    public String getSecretId() {}
+    public byte[] getCer() {}
+}
 ```
 
 ### Python
@@ -1932,7 +1921,12 @@ public class KeyVaultCertificateWithPolicy : KeyVaultCertificate {
 
 ### Java
 ```java
-
+public class KeyVaultCertificateWithPolicy extends KeyVaultCertificate {
+    public CertificateProperties getProperties() {}
+    public KeyVaultCertificateWithPolicy setProperties(CertificateProperties properties) {}
+    public CertificatePolicy getCertificatePolicy() {}
+    public KeyVaultCertificateWithPolicy setCertificatePolicy(CertificatePolicy certificatePolicy) {}
+}
 ```
 
 ### Python
@@ -1978,7 +1972,21 @@ public class CertificateProperties : IJsonDeserializable {
 
 ### Java
 ```java
-
+public class CertificateProperties {
+    public String getId() {}
+    public OffsetDateTime getNotBefore() {}
+    public OffsetDateTime getExpiresOn() {}
+    public OffsetDateTime getCreatedOn() {}
+    public OffsetDateTime getUpdatedOn() {}
+    public Map<String, String> getTags() {}
+    public CertificateProperties setTags(Map<String, String> tags) {}
+    public String getVersion() {}
+    public String getName() {}
+    public String getRecoveryLevel() {}
+    public Boolean isEnabled() {}
+    public CertificateProperties setEnabled(Boolean enabled) {}
+    public byte[] getX509Thumbprint() {}
+}
 ```
 
 ### Python
@@ -2094,7 +2102,19 @@ public class CertificateOperationProperties : IJsonDeserializable {
 
 ### Java
 ```java
-
+public final class CertificateOperation {
+    public String getId() {}
+    public String getIssuerName() {}
+    public String getCertificateType() {}
+    public Boolean getCertificateTransparency() {}
+    public byte[] getCsr() {}
+    public Boolean getCancellationRequested() {}
+    public String getStatus() {}
+    public String getStatusDetails() {}
+    public CertificateOperationError getError() {}
+    public String getTarget() {}
+    public String getRequestId() {}
+}
 ```
 
 ### Python
@@ -2186,7 +2206,11 @@ public class CertificateOperationError : IJsonDeserializable {
 
 ### Java
 ```java
-
+public class CertificateOperationError {
+    public String getCode() {}
+    public String getMessage() {}
+    public CertificateOperationError getInnerError() {}
+}
 ```
 
 ### Python
@@ -2215,7 +2239,11 @@ public class DeletedCertificate : KeyVaultCertificateWithPolicy {
 
 ### Java
 ```java
-
+public final class DeletedCertificate extends KeyVaultCertificate {
+    public String getRecoveryId() {}
+    public OffsetDateTime getScheduledPurgeDate() {}
+    public OffsetDateTime getDeletedOn() {}
+}
 ```
 
 ### Python
@@ -2291,7 +2319,45 @@ public class CertificatePolicy : IJsonSerializable, IJsonDeserializable {
 
 ### Java
 ```java
-
+public final class CertificatePolicy {
+    public CertificatePolicy(String issuerName, String subjectName) {}
+    public CertificatePolicy(String issuerName, SubjectAlternativeNames subjectAlternativeNames) {}
+    public List<CertificateKeyUsage> getKeyUsage() {}
+    public CertificatePolicy setKeyUsage(CertificateKeyUsage... keyUsage) {}
+    public List<String> getEnhancedKeyUsage() {}
+    public CertificatePolicy setEnhancedKeyUsage(List<String> ekus) {}
+    public Boolean isExportable() {}
+    public CertificatePolicy setExportable(Boolean exportable) {}
+    public CertificateKeyType getKeyType() {}
+    public CertificatePolicy setKeyType(CertificateKeyType keyType) {}
+    public Integer getKeySize() {}
+    public Boolean isReuseKey() {}
+    public CertificatePolicy setReuseKey(Boolean reuseKey) {}
+    public CertificateKeyCurveName getKeyCurveName() {}
+    public OffsetDateTime getCreatedOn() {}
+    public OffsetDateTime getUpdatedOn() {}
+    public Boolean isEnabled() {}
+    public CertificatePolicy setEnabled(Boolean enabled) {}
+    public CertificateContentType getContentType() {}
+    public CertificatePolicy setContentType(CertificateContentType contentType) {}
+    public CertificatePolicy getSubjectName(String subjectName) {}
+    public SubjectAlternativeNames getSubjectAlternativeNames() {}
+    public CertificatePolicy setSubjectAlternativeNames(SubjectAlternativeNames subjectAlternativeNames) {}
+    public CertificatePolicy setValidityInMonths(Integer validityInMonths) {}
+    public CertificatePolicy setKeySize(Integer keySize) {}
+    public CertificatePolicy setKeyCurveName(CertificateKeyCurveName keyCurveName) {}
+    public CertificatePolicy setIssuerName(String issuerName) {}
+    public CertificatePolicy setCertificateType(String certificateType) {}
+    public CertificatePolicy setCertificateTransparency(Boolean certificateTransparency) {}
+    public String getSubjectName() {}
+    public Integer getValidityInMonths() {}
+    public String getIssuerName() {}
+    public String getCertificateType() {}
+    public Boolean isCertificateTransparency() {}
+    public CertificatePolicy setLifeTimeActions(LifeTimeAction... actions) {}
+    public List<LifeTimeAction> getLifeTimeActions() {}
+    public static CertificatePolicy getDefaultPolicy() {}
+}
 ```
 
 ### Python
@@ -2420,7 +2486,12 @@ public struct CertificateContentType : IEquatable<CertificateContentType> {
 
 ### Java
 ```java
-
+public final class CertificateContentType extends ExpandableStringEnum<CertificateContentType> {
+    public static final CertificateContentType PKCS12 = fromString("application/x-pkcs12");
+    public static final CertificateContentType PEM = fromString("application/x-pem-file");
+    public static CertificateContentType fromString(String name) {}
+    public static Collection<CertificateContentType> values() {}
+}
 ```
 
 ### Python
@@ -2463,7 +2534,19 @@ public struct CertificateKeyUsage : IEquatable<CertificateKeyUsage> {
 
 ### Java
 ```java
-
+public final class CertificateKeyUsage extends ExpandableStringEnum<CertificateKeyUsage> {
+    public static final CertificateKeyUsage DIGITAL_SIGNATURE = fromString("digitalSignature");
+    public static final CertificateKeyUsage NON_REPUDIATION = fromString("nonRepudiation");
+    public static final CertificateKeyUsage KEY_ENCIPHERMENT = fromString("keyEncipherment");
+    public static final CertificateKeyUsage DATA_ENCIPHERMENT = fromString("dataEncipherment");
+    public static final CertificateKeyUsage KEY_AGREEMENT = fromString("keyAgreement");
+    public static final CertificateKeyUsage KEY_CERT_SIGN = fromString("keyCertSign");
+    public static final CertificateKeyUsage CRL_SIGN = fromString("cRLSign");
+    public static final CertificateKeyUsage ENCIPHER_ONLY = fromString("encipherOnly");
+    public static final CertificateKeyUsage DECIPHER_ONLY = fromString("decipherOnly");
+    public static CertificateKeyUsage fromString(String name) {}
+    public static Collection<CertificateKeyUsage> values() {}
+}
 ```
 
 ### Python
@@ -2522,7 +2605,12 @@ public struct CertificatePolicyAction : IEquatable<CertificatePolicyAction> {
 
 ### Java
 ```java
-
+public enum CertificatePolicyAction {
+    EMAIL_CONTACTS("EmailContacts"),
+    AUTO_RENEW("AutoRenew");
+    public static CertificatePolicyAction fromString(String value) {}
+    public String toString() {}
+}
 ```
 
 ### Python
@@ -2552,7 +2640,14 @@ public class LifetimeAction : IJsonSerializable, IJsonDeserializable {
 
 ### Java
 ```java
-
+public final class LifeTimeAction {
+    public LifeTimeAction(CertificatePolicyAction certificatePolicyAction) {}
+    public Integer getLifetimePercentage() {}
+    public LifeTimeAction setLifetimePercentage(Integer lifetimePercentage) {}
+    public Integer getDaysBeforeExpiry() {}
+    public LifeTimeAction setDaysBeforeExpiry(Integer daysBeforeExpiry) {}
+    public CertificatePolicyAction getActionType() {}
+}
 ```
 
 ### Python
@@ -2597,7 +2692,14 @@ public class SubjectAlternativeNames : IEnumerable<string>, IEnumerable, IJsonSe
 
 ### Java
 ```java
-
+public final class SubjectAlternativeNames {
+    public List<String> getEmails() {}
+    public static SubjectAlternativeNames fromEmails(List<String> emails) {}
+    public List<String> getDnsNames() {}
+    public static SubjectAlternativeNames fromDnsNames(List<String> dnsNames) {}
+    public List<String> getUserPrincipalNames() {}
+    public static SubjectAlternativeNames fromUserPrincipalNames(List<String> upns) {}
+}
 ```
 
 ### Python
@@ -2651,7 +2753,14 @@ public struct CertificateKeyCurveName : IEquatable<CertificateKeyCurveName> {
 
 ### Java
 ```java
-
+public final class CertificateKeyCurveName extends ExpandableStringEnum<CertificateKeyCurveName> {
+    public static final CertificateKeyCurveName P_256 = fromString("P-256");
+    public static final CertificateKeyCurveName P_384 = fromString("P-384");
+    public static final CertificateKeyCurveName P_521 = fromString("P-521");
+    public static final CertificateKeyCurveName P_256K = fromString("P-256K");
+    public static CertificateKeyCurveName fromString(String name) {}
+    public static Collection<CertificateKeyCurveName> values() {}
+}
 ```
 
 ### Python
@@ -2698,7 +2807,15 @@ public struct CertificateKeyType : IEquatable<CertificateKeyType> {
 
 ### Java
 ```java
-
+public final class CertificateKeyType extends ExpandableStringEnum<CertificateKeyType> {
+    public static final CertificateKeyType EC = fromString("EC");
+    public static final CertificateKeyType EC_HSM = fromString("EC-HSM");
+    public static final CertificateKeyType RSA = fromString("RSA");
+    public static final CertificateKeyType RSA_HSM = fromString("RSA-HSM");
+    public static final CertificateKeyType OCT = fromString("oct");
+    public static CertificateKeyType fromString(String name) {}
+    public static Collection<CertificateKeyType> values() {}
+}
 ```
 
 ### Python
@@ -2742,7 +2859,15 @@ public class MergeCertificateOptions : IJsonSerializable {
 
 ### Java
 ```java
-
+public class MergeCertificateOptions {
+    public MergeCertificateOptions(String certificateName, List<byte[]> x509Certificates) {}
+    public MergeCertificateOptions setTags(Map<String, String> tags) {}
+    public Map<String, String> getTags() {}
+    public MergeCertificateOptions setEnabled(Boolean enabled) {}
+    public Boolean isEnabled() {}
+    public String getName() {}
+    public List<byte[]> getX509Certificates() {}
+}
 ```
 
 ### Python
@@ -2774,7 +2899,19 @@ public class ImportCertificateOptions : IJsonSerializable {
 
 ### Java
 ```java
-
+public final class ImportCertificateOptions {
+    public ImportCertificateOptions(String name, byte[] value) {}
+    public ImportCertificateOptions setEnabled(Boolean enabled) {}
+    public Boolean isEnabled() {}
+    public CertificatePolicy getCertificatePolicy() {}
+    public ImportCertificateOptions setCertificatePolicy(CertificatePolicy certificatePolicy) {}
+    public ImportCertificateOptions setTags(Map<String, String> tags) {}
+    public Map<String, String> getTags() {}
+    public ImportCertificateOptions setPassword(String password) {}
+    public String getPassword() {}
+    public String getName() {}
+    public byte[] getValue() {}
+}
 ```
 
 ### Python
@@ -2806,7 +2943,10 @@ public static class WellKnownIssuerNames {
 
 ### Java
 ```java
-
+public class WellKnownIssuerNames {
+    public static final String SELF = "Self";
+    public static final String UNKNOWN = "Unknown";
+}
 ```
 
 ### Python
@@ -2850,7 +2990,14 @@ public class AdministratorContact {
 
 ### Java
 ```java
-
+public final class AdministratorContact {
+    public AdministratorContact(String firstName, String lastName, String email) {}
+    public AdministratorContact(String firstName, String lastName, String email, String contact) {}
+    public String getFirstName() {}
+    public String getLastName() {}
+    public String getEmail() {}
+    public String getContact() {}
+}
 ```
 
 ### Python
@@ -2901,7 +3048,13 @@ public class CertificateContact : IJsonDeserializable, IJsonSerializable {
 
 ### Java
 ```java
-
+public final class CertificateContact {
+    public CertificateContact(String name, String emailAddress, String phone) {}
+    public CertificateContact(String name, String emailAddress) {}
+    public String getEmailAddress() {}
+    public String getName() {}
+    public String getPhone() {}
+}
 ```
 
 ### Python
@@ -2942,7 +3095,24 @@ public class CertificateIssuer : IJsonDeserializable, IJsonSerializable {
 
 ### Java
 ```java
-
+public final class CertificateIssuer {
+    public CertificateIssuer(String name, String provider) {}
+    public IssuerProperties getProperties() {}
+    public String getId() {}
+    public String getName() {}
+    public String getAccountId() {}
+    public CertificateIssuer setAccountId(String accountId) {}
+    public String getPassword() {}
+    public CertificateIssuer setPassword(String password) {}
+    public String getOrganizationId() {}
+    public CertificateIssuer setOrganizationId(String organizationId) {}
+    public List<AdministratorContact> getAdministratorContacts() {}
+    public CertificateIssuer setAdministratorContacts(List<AdministratorContact> administratorContacts) {}
+    public Boolean isEnabled() {}
+    public CertificateIssuer setEnabled(Boolean enabled) {}
+    public OffsetDateTime getCreated() {}
+    public OffsetDateTime getUpdated() {}
+}
 ```
 
 ### Python
@@ -3010,7 +3180,12 @@ public class IssuerProperties : IJsonDeserializable, IJsonSerializable {
 
 ### Java
 ```java
-
+public class IssuerProperties {
+    public IssuerProperties(String name, String provider) {}
+    public String getId() {}
+    public String getProvider() {}
+    public String getName() {}
+}
 ```
 
 ### Python

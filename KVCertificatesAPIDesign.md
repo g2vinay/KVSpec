@@ -11,6 +11,33 @@ The Azure Key Vault Certificate client library enables programmatically managing
 * Contact
 * Certificate Operation
 
+## Scenario - Create CertificateClient
+
+### API
+
+#### .NET
+
+```c#
+public CertificateClient(Uri vaultUri, TokenCredential credential);
+public CertificateClient(Uri vaultUri, TokenCredential credential, CertificateClientOptions options);
+
+public class CertificateClientOptions : ClientOptions {
+    public enum ServiceVersion {
+        V7_0 = 0,
+    }
+    public CertificateClientOptions(ServiceVersion version = V7_0);
+    public ServiceVersion Version { get; }
+}
+```
+
+## Scenario - Get vault endpoint
+
+### API
+
+#### .NET
+```c#
+public virtual Uri VaultUri { get; }
+```
 
 ## Scenario - Create Certificate
 ### Usage
@@ -63,45 +90,21 @@ try {
 
 ### .NET
 ```c#
-
 var client = new CertificateClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
 
-// Let's create a self signed certifiate using the default policy. If the certificiate
-// already exists in the Key Vault, then a new version of the key is created.
 string certName = $"defaultCert-{Guid.NewGuid()}";
+CertificateOperation certOp = client.StartCreateCertificate(certName, CertificatePolicy.Default);
 
-CertificateOperation certOp = await client.StartCreateCertificateAsync(certName);
-
-// Next let's wait on the certificate operation to complete. Note that certificate creation can last an indeterministic
-// amount of time, so applications should only wait on the operation to complete in the case the issuance time is well
-// known and within the scope of the application lifetime. In this case we are creating a self-signed certificate which
-// should be issued in a relatively short amount of time.
-CertificateWithPolicy certificate = await certOp.WaitCompletionAsync();
-
-// At some time later we could get the created certificate along with it's policy from the Key Vault.
-certificate = await client.GetCertificateWithPolicyAsync(certName);
-
-Debug.WriteLine($"Certificate was returned with name {certificate.Name} which expires {certificate.Properties.Expires}");
-
-
-// Create Cert Synchronously
-CertificateOperation certOp = client.StartCreateCertificate(certName);
-
-// Next let's wait on the certificate operation to complete. Note that certificate creation can last an indeterministic
-// amount of time, so applications should only wait on the operation to complete in the case the issuance time is well
-// known and within the scope of the application lifetime. In this case we are creating a self-signed certificate which
-// should be issued in a relatively short amount of time.
 while (!certOp.HasCompleted)
 {
     certOp.UpdateStatus();
 
-    Thread.Sleep(certOp.PollingInterval);
+    Thread.Sleep(TimeSpan.FromSeconds(1));
 }
 
-// Let's get the created certificate along with it's policy from the Key Vault.
-CertificateWithPolicy certificate = client.GetCertificateWithPolicy(certName);
+KeyVaultCertificateWithPolicy certificate = client.GetCertificate(certName);
 
-Debug.WriteLine($"Certificate was returned with name {certificate.Name} which expires {certificate.Properties.Expires}");
+Debug.WriteLine($"Certificate was returned with name {certificate.Name} which expires {certificate.Properties.ExpiresOn}");
 ```
 
 ### Python
@@ -167,13 +170,10 @@ Certificate createCertificate(String name, CertificatePolicy policy, Map<String,
 
 ### .NET
 ```c#
-public virtual CertificateOperation StartCreateCertificate(string name, CancellationToken cancellationToken = default);
-public virtual CertificateOperation StartCreateCertificate(string name, CertificatePolicy policy, bool? enabled = default, IDictionary<string, string> tags = default, CancellationToken cancellationToken = default);
-
-public virtual async Task<CertificateOperation> StartCreateCertificateAsync(string name, CancellationToken cancellationToken = default);
-public virtual async Task<CertificateOperation> StartCreateCertificateAsync(string name, CertificatePolicy policy, bool? enabled = default, IDictionary<string, string> tags = default, CancellationToken cancellationToken = default)
-
+public virtual CertificateOperation StartCreateCertificate(string certificateName, CertificatePolicy policy, bool? enabled = null, IDictionary<string, string> tags = null, CancellationToken cancellationToken = default);
+public virtual Task<CertificateOperation> StartCreateCertificateAsync(string certificateName, CertificatePolicy policy, bool? enabled = null, IDictionary<string, string> tags = null, CancellationToken cancellationToken = default);
 ```
+
 ### Python
 //Async
 ```python
@@ -203,7 +203,7 @@ public virtual async Task<CertificateOperation> StartCreateCertificateAsync(stri
   ): Promise<PollerLike<PollOperationState<KeyVaultCertificate>, KeyVaultCertificate>>
 ```
 
-## Scenario - Get Certificate
+## Scenario - Get Certificate or certificate version
 ### Usage
 ### Java
 ```java
@@ -252,10 +252,10 @@ public Response<Certificate> getCertificateWithResponse(String name, String vers
 
 ### .NET
 ```c#
-public virtual Response<CertificateWithPolicy> GetCertificateWithPolicy(string name, CancellationToken cancellationToken = default);
-public virtual async Task<Response<CertificateWithPolicy>> GetCertificateWithPolicyAsync(string name, CancellationToken cancellationToken = default);
-public virtual Response<Certificate> GetCertificate(string name, string version, CancellationToken cancellationToken = default);
-public virtual async Task<Response<Certificate>> GetCertificateAsync(string name, string version, CancellationToken cancellationToken = default)
+public virtual Response<KeyVaultCertificateWithPolicy> GetCertificate(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<Response<KeyVaultCertificateWithPolicy>> GetCertificateAsync(string certificateName, CancellationToken cancellationToken = default);
+public virtual Response<KeyVaultCertificate> GetCertificateVersion(string certificateName, string version, CancellationToken cancellationToken = default);
+public virtual Task<Response<KeyVaultCertificate>> GetCertificateVersionAsync(string certificateName, string version, CancellationToken cancellationToken = default);
 ```
 
 ### Python
@@ -315,9 +315,8 @@ public Response<CertificatePolicy> getCertificatePolicyWithResponse(String name,
 
 ### .NET
 ```c#
-public virtual Response<CertificatePolicy> GetCertificatePolicy(string certificateName, CancellationToken cancellationToken = default)
-public virtual async Task<Response<CertificatePolicy>> GetCertificatePolicyAsync(string certificateName, CancellationToken cancellationToken = default)
-
+public virtual Response<CertificatePolicy> GetCertificatePolicy(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<Response<CertificatePolicy>> GetCertificatePolicyAsync(string certificateName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -363,25 +362,6 @@ System.out.printf("Updated Certificate with name %s and enabled status %s", upda
     updatedCertificate.getProperties().getEnabled());
 ```
 
-### NET
-```c#
-//Async
-CertificateProperties certificateProperties = certificate.Properties;
-certificateProperties.Enabled = false;
-
-Certificate updatedCert = await client.UpdateCertificatePropertiesAsync(certificateProperties);
-
-Debug.WriteLine($"Certificate enabled set to '{updatedCert.Properties.Enabled}'");
-
-
-//Sync
-CertificateProperties certificateProperties = certificate.Properties;
-certificateProperties.Enabled = false;
-
-Certificate updatedCert = client.UpdateCertificateProperties(certificateProperties);
-
-Debug.WriteLine($"Certificate enabled set to '{updatedCert.Properties.Enabled}'");
-```
 ### Python
 ```python
 
@@ -441,9 +421,8 @@ public Response<Certificate> updateCertificatePropertiesWithResponse(Certificate
 
 ### .NET
 ```c#
-public virtual Response<Certificate> UpdateCertificateProperties(CertificateProperties certificateProperties, CancellationToken cancellationToken = default);
-
-public virtual async Task<Response<Certificate>> UpdateCertificatePropertiesAsync(CertificateProperties certificateProperties, CancellationToken cancellationToken = default);
+public virtual Response<KeyVaultCertificate> UpdateCertificateProperties(CertificateProperties properties, CancellationToken cancellationToken = default);
+public virtual Task<Response<KeyVaultCertificate>> UpdateCertificatePropertiesAsync(CertificateProperties properties, CancellationToken cancellationToken = default);
 ```
 
 ### Python
@@ -501,10 +480,8 @@ public Response<CertificatePolicy> updateCertificatePolicyWithResponse(String ce
 
 ### .NET
 ```c#
-public virtual Response<CertificatePolicy> UpdateCertificatePolicy(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
-public virtual async Task<Response<CertificatePolicy>> UpdateCertificatePolicyAsync(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default)
-
-
+public virtual Response<CertificatePolicy> UpdateCertificatePolicy(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default);
+public virtual Task<Response<CertificatePolicy>> UpdateCertificatePolicyAsync(string certificateName, CertificatePolicy policy, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -525,15 +502,6 @@ async def update_policy(
 ## Scenario - Delete Certificate
 
 ### Usage
-
-### .NET
-```c#
-//Async
-await client.DeleteCertificateAsync(certName);
-
-//Sync
-client.DeleteCertificate(certName);
-```
 
 ### python
 ``` python
@@ -567,10 +535,20 @@ public Response<DeletedCertificate> deleteCertificateWithResponse(String name, C
 
 ### .NET
 ```c#
-public virtual Response<DeletedCertificate> DeleteCertificate(string name, CancellationToken cancellationToken = default);
-public virtual async Task<Response<DeletedCertificate>> DeleteCertificateAsync(string name, CancellationToken cancellationToken = default);
+public virtual DeleteCertificateOperation StartDeleteCertificate(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<DeleteCertificateOperation> StartDeleteCertificateAsync(string certificateName, CancellationToken cancellationToken = default);
 
-
+public class DeleteCertificateOperation : Operation<DeletedCertificate> {
+    public override bool HasCompleted { get; }
+    public override bool HasValue { get; }
+    public override string Id { get; }
+    public override DeletedCertificate Value { get; }
+    public override Response GetRawResponse();
+    public override Response UpdateStatus(CancellationToken cancellationToken = default);
+    public override ValueTask<Response> UpdateStatusAsync(CancellationToken cancellationToken = default);
+    public override ValueTask<Response<DeletedCertificate>> WaitForCompletionAsync(CancellationToken cancellationToken = default);
+    public override ValueTask<Response<DeletedCertificate>> WaitForCompletionAsync(TimeSpan pollingInterval, CancellationToken cancellationToken);
+}
 ```
 ### Python
 //Async
@@ -623,10 +601,8 @@ public Response<DeletedCertificate> getDeletedCertificateWithResponse(String nam
 
 ### .NET
 ```c#
-public virtual Response<DeletedCertificate> GetDeletedCertificate(string name, CancellationToken cancellationToken = default)
-public virtual async Task<Response<DeletedCertificate>> GetDeletedCertificateAsync(string name, CancellationToken cancellationToken = default)
-
-
+public virtual Response<DeletedCertificate> GetDeletedCertificate(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<Response<DeletedCertificate>> GetDeletedCertificateAsync(string certificateName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -671,8 +647,20 @@ public Response<Certificate> recoverDeletedCertificate(String name);
 
 ### .NET
 ```c#
-public virtual Response<CertificateWithPolicy> RecoverDeletedCertificate(string name, CancellationToken cancellationToken = default);
-public virtual async Task<Response<CertificateWithPolicy>> RecoverDeletedCertificateAsync(string name, CancellationToken cancellationToken = default);
+public virtual RecoverDeletedCertificateOperation StartRecoverDeletedCertificate(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<RecoverDeletedCertificateOperation> StartRecoverDeletedCertificateAsync(string certificateName, CancellationToken cancellationToken = default);
+
+public class RecoverDeletedCertificateOperation : Operation<KeyVaultCertificateWithPolicy> {
+    public override bool HasCompleted { get; }
+    public override bool HasValue { get; }
+    public override string Id { get; }
+    public override KeyVaultCertificateWithPolicy Value { get; }
+    public override Response GetRawResponse();
+    public override Response UpdateStatus(CancellationToken cancellationToken = default);
+    public override ValueTask<Response> UpdateStatusAsync(CancellationToken cancellationToken = default);
+    public override ValueTask<Response<KeyVaultCertificateWithPolicy>> WaitForCompletionAsync(CancellationToken cancellationToken = default);
+    public override ValueTask<Response<KeyVaultCertificateWithPolicy>> WaitForCompletionAsync(TimeSpan pollingInterval, CancellationToken cancellationToken);
+}
 ```
 ### Python
 
@@ -729,9 +717,8 @@ public Response<Void> purgeDeletedCertificateWithResponse(String name, Context c
 
 ### .NET
 ```c#
-public virtual Response PurgeDeletedCertificate(string name, CancellationToken cancellationToken = default)
-public virtual async Task<Response> PurgeDeletedCertificateAsync(string name, CancellationToken cancellationToken = default)
-
+public virtual Response PurgeDeletedCertificate(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<Response> PurgeDeletedCertificateAsync(string certificateName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -788,8 +775,8 @@ public Response<byte[]> backupCertificateWithResponse(String name, Context conte
 
 ### .NET
 ```c#
-public virtual Response<byte[]> BackupCertificate(string name, CancellationToken cancellationToken = default)
-public virtual async Task<Response<byte[]>> BackupCertificateAsync(string name, CancellationToken cancellationToken = default)
+public virtual Response<byte[]> BackupCertificate(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<Response<byte[]>> BackupCertificateAsync(string certificateName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -846,9 +833,8 @@ public Response<Certificate> restoreCertificateWithResponse(byte[] backup, Conte
 
 ### .NET
 ```c#
-public virtual Response<CertificateWithPolicy> RestoreCertificate(byte[] backup, CancellationToken cancellationToken = default);
-
-public virtual async Task<Response<CertificateWithPolicy>> RestoreCertificateAsync(byte[] backup, CancellationToken cancellationToken = default)
+public virtual Response<KeyVaultCertificateWithPolicy> RestoreCertificateBackup(byte[] backup, CancellationToken cancellationToken = default);
+public virtual Task<Response<KeyVaultCertificateWithPolicy>> RestoreCertificateBackupAsync(byte[] backup, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -864,22 +850,6 @@ async def restore_certificate_backup(self, backup: bytes, **kwargs: "**Any") -> 
 
 ## Scenario - List Ceriticates
 ### Usage
-### .NET
-```c#
-//Async
-// Let's list the certificates which exist in the vault along with their thumbprints
-await foreach (CertificateProperties cert in client.GetCertificatesAsync())
-{
-    Debug.WriteLine($"Certificate is returned with name {cert.Name} and thumbprint {BitConverter.ToString(cert.X509Thumbprint)}");
-}
-
-//Sync
-// Let's list the certificates which exist in the vault along with their thumbprints
-foreach (CertificateProperties cert in client.GetCertificates())
-{
-    Debug.WriteLine($"Certificate is returned with name {cert.Name} and thumbprint {BitConverter.ToString(cert.X509Thumbprint)}");
-}
-```
 
 ### python
  ```python
@@ -908,8 +878,8 @@ public PagedIterable<CertificateProperties> listCertificates(boolean includePend
 
 ### .NET
 ```c#
-public virtual IEnumerable<Response<CertificateProperties>> GetCertificates(bool? includePending = default, CancellationToken cancellationToken = default)
-public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificatesAsync(bool? includePending = default, CancellationToken cancellationToken = default)
+public virtual Pageable<CertificateProperties> GetPropertiesOfCertificates(bool includePending = false, CancellationToken cancellationToken = default);
+public virtual AsyncPageable<CertificateProperties> GetPropertiesOfCertificatesAsync(bool includePending = false, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -924,22 +894,6 @@ def list_properties_of_certificates(self, **kwargs: "**Any") -> AsyncIterable[Ce
 
 ## Scenario - List Ceriticate Versions
 ### Usage
-### .NET
-```c#
-//Async
-// Let's print all the versions of this certificate
-await foreach (CertificateProperties cert in client.GetCertificateVersionsAsync(certName1))
-{
-    Debug.WriteLine($"Certificate {cert.Name} with name {cert.Version}");
-}
-
-//Sync
-// Let's print all the versions of this certificate
-foreach (CertificateProperties cert in client.GetCertificateVersions(certName1))
-{
-    Debug.WriteLine($"Certificate {cert.Name} with name {cert.Version}");
-}
-```
 
 ### python
  ```python
@@ -974,9 +928,8 @@ public PagedIterable<CertificateProperties> listCertificateVersions(String name,
 
 ### .NET
 ```c#
-public virtual IEnumerable<Response<CertificateProperties>> GetCertificateVersions(string name, CancellationToken cancellationToken = default);
-
-public virtual IAsyncEnumerable<Response<CertificateProperties>> GetCertificateVersionsAsync(string name, CancellationToken cancellationToken = default);
+public virtual Pageable<CertificateProperties> GetPropertiesOfCertificateVersions(string certificateName, CancellationToken cancellationToken = default);
+public virtual AsyncPageable<CertificateProperties> GetPropertiesOfCertificateVersionsAsync(string certificateName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -994,23 +947,6 @@ def list_properties_of_certificate_versions(
 
 ## Scenario - List Deleted Certificates
 ### Usage
-### .NET
-```c#
-//Async
-// Let's print all the versions of this certificate
-await foreach (CertificateProperties cert in client.GetCertificateVersionsAsync(certName1))
-{
-    Debug.WriteLine($"Certificate {cert.Name} with name {cert.Version}");
-}
-
-//Sync
-// You can list all the deleted and non-purged certificates, assuming Key Vault is soft-delete enabled.
-foreach (DeletedCertificate deletedCert in client.GetDeletedCertificates())
-{
-    Debug.WriteLine($"Deleted certificate's recovery Id {deletedCert.RecoveryId}");
-}
-```
-
 ### python
  ```python
 # async
@@ -1045,8 +981,8 @@ public PagedIterable<DeletedCertificate> listDeletedCertificates(Context context
 
 ### .NET
 ```c#
-public virtual IEnumerable<Response<DeletedCertificate>> GetDeletedCertificates(CancellationToken cancellationToken = default)
-public virtual IAsyncEnumerable<Response<DeletedCertificate>> GetDeletedCertificatesAsync(CancellationToken cancellationToken = default)
+public virtual Pageable<DeletedCertificate> GetDeletedCertificates(bool includePending = false, CancellationToken cancellationToken = default);
+public virtual AsyncPageable<DeletedCertificate> GetDeletedCertificatesAsync(bool includePending = false, CancellationToken cancellationToken = default);
 ```
 
 ### Python
@@ -1118,8 +1054,8 @@ public Response<Issuer> createIssuerWithResponse(Issuer issuer, Context context)
 
 ### .NET
 ```c#
-public virtual Response<Issuer> CreateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
-public virtual async Task<Response<Issuer>> CreateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
+public virtual Response<CertificateIssuer> CreateIssuer(CertificateIssuer issuer, CancellationToken cancellationToken = default);
+public virtual Task<Response<CertificateIssuer>> CreateIssuerAsync(CertificateIssuer issuer, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1190,8 +1126,8 @@ public Issuer getIssuer(IssuerProperties issuerProperties);
 
 ### .NET
 ```c#
-public virtual Response<Issuer> GetIssuer(string name, CancellationToken cancellationToken = default)
-public virtual async Task<Response<Issuer>> GetIssuerAsync(string name, CancellationToken cancellationToken = default)
+public virtual Response<CertificateIssuer> GetIssuer(string issuerName, CancellationToken cancellationToken = default);
+public virtual Task<Response<CertificateIssuer>> GetIssuerAsync(string issuerName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1246,8 +1182,8 @@ public Issuer deleteIssuer(String name);
 
 ### .NET
 ```c#
-public virtual Response<Issuer> DeleteIssuer(string name, CancellationToken cancellationToken = default)
-public virtual async Task<Response<Issuer>> DeleteIssuerAsync(string name, CancellationToken cancellationToken = default)
+public virtual Response<CertificateIssuer> DeleteIssuer(string issuerName, CancellationToken cancellationToken = default);
+public virtual Task<Response<CertificateIssuer>> DeleteIssuerAsync(string issuerName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1316,8 +1252,8 @@ public PagedIterable<IssuerPropeties> listIssuers(Context context);
 
 ### .NET
 ```c#
-public virtual IEnumerable<Response<IssuerProperties>> GetIssuers(CancellationToken cancellationToken = default)
-public virtual IAsyncEnumerable<Response<IssuerProperties>> GetIssuersAsync(CancellationToken cancellationToken = default)
+public virtual Pageable<IssuerProperties> GetPropertiesOfIssuers(CancellationToken cancellationToken = default);
+public virtual AsyncPageable<IssuerProperties> GetPropertiesOfIssuersAsync(CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1371,8 +1307,8 @@ public Response<Issuer> updateIssuerWithResponse(Issuer issuer, Context context)
 
 ### .NET
 ```c#
-public virtual Response<Issuer> UpdateIssuer(Issuer issuer, CancellationToken cancellationToken = default)
-public virtual async Task<Response<Issuer>> UpdateIssuerAsync(Issuer issuer, CancellationToken cancellationToken = default)
+public virtual Response<CertificateIssuer> UpdateIssuer(CertificateIssuer issuer, CancellationToken cancellationToken = default);
+public virtual Task<Response<CertificateIssuer>> UpdateIssuerAsync(CertificateIssuer issuer, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1413,8 +1349,8 @@ Question: Do we need this, if we have LRO/Poller support ?
 
 ### .NET
 ```c#
-public virtual CertificateOperation GetCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
-public virtual async Task<CertificateOperation> GetCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
+public virtual CertificateOperation GetCertificateOperation(string certificateName, CancellationToken cancellationToken = default);
+public virtual Task<CertificateOperation> GetCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1458,9 +1394,11 @@ public Response<CertificateOperation> cancelCertificateOperation(String certific
 
 ### .NET
 ```c#
-public virtual CertificateOperation CancelCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
-public virtual async Task<CertificateOperation> CancelCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
-
+public class CertificateOperation : Operation<KeyVaultCertificateWithPolicy>
+{
+    public virtual void Cancel(CancellationToken cancellationToken = default);
+    public virtual Task CancelAsync(CancellationToken cancellationToken = default);
+}
 ```
 ### Python
 ```python
@@ -1505,8 +1443,11 @@ public Response<CertificateOperation> deleteCertificateOperation(String certific
 
 ### .NET
 ```c#
-public virtual CertificateOperation DeleteCertificateOperation(string certificateName, CancellationToken cancellationToken = default)
-public virtual async Task<CertificateOperation> DeleteCertificateOperationAsync(string certificateName, CancellationToken cancellationToken = default)
+public class CertificateOperation : Operation<KeyVaultCertificateWithPolicy>
+{
+    public virtual void Delete(CancellationToken cancellationToken = default);
+    public virtual Task DeleteAsync(CancellationToken cancellationToken = default);
+}
 ```
 ### Python
 ```python
@@ -1561,8 +1502,8 @@ public PagedIterable<Contact> setContacts(List<Contact> contacts, Context contex
 
 ### .NET
 ```c#
-public virtual Response<IList<Contact>> SetContacts(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
-public virtual async Task<Response<IList<Contact>>> SetContactsAsync(IEnumerable<Contact> contacts, CancellationToken cancellationToken = default)
+public virtual Response<IList<CertificateContact>> SetContacts(IEnumerable<CertificateContact> contacts, CancellationToken cancellationToken = default);
+public virtual Task<Response<IList<CertificateContact>>> SetContactsAsync(IEnumerable<CertificateContact> contacts, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1611,8 +1552,8 @@ public PagedIterable<Contact> listContacts(Context context);
 
 ### .NET
 ```c#
-public virtual Response<IList<Contact>> GetContacts(CancellationToken cancellationToken = default)
-public virtual async Task<Response<IList<Contact>>> GetContactsAsync(CancellationToken cancellationToken = default)
+public virtual Response<IList<CertificateContact>> GetContacts(CancellationToken cancellationToken = default);
+public virtual Task<Response<IList<CertificateContact>>> GetContactsAsync(CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1656,8 +1597,8 @@ public PagedIterable<Contact> deleteContacts(Context context);
 
 ### .NET
 ```c#
-public virtual Response<IList<Contact>> DeleteContacts(CancellationToken cancellationToken = default)
-public virtual async Task<Response<IList<Contact>>> DeleteContactsAsync(CancellationToken cancellationToken = default)
+public virtual Response<IList<CertificateContact>> DeleteContacts(CancellationToken cancellationToken = default);
+public virtual Task<Response<IList<CertificateContact>>> DeleteContactsAsync(CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1668,42 +1609,7 @@ async def delete_contacts(self, **kwargs: "**Any") -> List[CertificateContact]:
 public async deleteContacts(options: DeleteContactsOptions = {}): Promise<CertificateContacts>
 ```
 
-## Scenario - Get Certificate Signing Request
-### Usage
-### java
-```java
-//Async
-certificateAsyncClient.getPendingCertificateSigningRequest("certificateName")
-    .subscribe(signingRequest -> System.out.printf("Received Signing request blob of length %s",
-        signingRequest.length));
-
-//Sync
-byte[] signingRequest = certificateClient.getPendingCertificateSigningRequest("certificateName");
-System.out.printf("Received Signing request blob of length %s", signingRequest.length);
-```
-### API
-### Java
-```java
-public Mono<byte[]> getPendingCertificateSigningRequest(String certificateName);
-public Mono<Response<byte[]>> getPendingCertificateSigningRequestWithResponse(String certificateName);
-
-public byte[] getPendingCertificateSigningRequest(String certificateName);
-public Response<byte[]> getPendingCertificateSigningRequestWithResponse(String certificateName, Context context);
-```
-
-### .NET
-```c#
-Not in 
-.
-```
-### Python
-removed get_pending_certificate_signing_request
-```
-### JS/TS
-```ts
-Not in Master
-```
-
+## ~Scenario - Get Certificate Signing Request~
 
 ## Scenario - Merge Certificate
 ### Usage
@@ -1752,9 +1658,8 @@ public Response<Certificate> mergeCertificateWithResponse(MergeCertificateOption
 
 ### .NET
 ```c#
-public virtual Response<CertificateWithPolicy> MergeCertificate(CertificateMergeOptions certificateMergeOptions, CancellationToken cancellationToken = default);
-
-public virtual async Task<Response<CertificateWithPolicy>> MergeCertificateAsync(CertificateMergeOptions certificateMergeOptions, CancellationToken cancellationToken = default);
+public virtual Response<KeyVaultCertificateWithPolicy> MergeCertificate(MergeCertificateOptions mergeCertificateOptions, CancellationToken cancellationToken = default);
+public virtual Task<Response<KeyVaultCertificateWithPolicy>> MergeCertificateAsync(MergeCertificateOptions mergeCertificateOptions, CancellationToken cancellationToken = default);
 ```
 ### Python
 ```python
@@ -1788,8 +1693,8 @@ public Response<Certificate> importCertificate(CertificateImport certificateImpo
 
 ### .NET
 ```c#
-public virtual Response<CertificateWithPolicy> ImportCertificate(CertificateImport import, CancellationToken cancellationToken = default)
-public virtual async Task<Response<CertificateWithPolicy>> ImportCertificateAsync(CertificateImport import, CancellationToken cancellationToken = default)
+public virtual Response<KeyVaultCertificateWithPolicy> ImportCertificate(ImportCertificateOptions importCertificateOptions, CancellationToken cancellationToken = default);
+public virtual Task<Response<KeyVaultCertificateWithPolicy>> ImportCertificateAsync(ImportCertificateOptions importCertificateOptions, CancellationToken cancellationToken = default);
 ```
 
 ### Python
@@ -1811,7 +1716,15 @@ async def import_certificate(
 ## KeyVaultCertificate
 ### .NET
 ```c#
-
+public class KeyVaultCertificate : IJsonDeserializable {
+    public byte[] Cer { get; }
+    public CertificateContentType ContentType { get; }
+    public Uri Id { get; }
+    public Uri KeyId { get; }
+    public string Name { get; }
+    public CertificateProperties Properties { get; }
+    public Uri SecretId { get; }
+}
 ```
 
 ### Java
@@ -1831,7 +1744,9 @@ async def import_certificate(
 ## KeyVaultCertificateWithPolicy
 ### .NET
 ```c#
-
+public class KeyVaultCertificateWithPolicy : KeyVaultCertificate {
+    public CertificatePolicy Policy { get; }
+}
 ```
 
 ### Java
@@ -1851,7 +1766,22 @@ async def import_certificate(
 ## CertificateProperties
 ### .NET
 ```c#
-
+public class CertificateProperties : IJsonDeserializable {
+    public CertificateProperties(string name);
+    public CertificateProperties(Uri id);
+    public DateTimeOffset? CreatedOn { get; }
+    public bool? Enabled { get; set; }
+    public DateTimeOffset? ExpiresOn { get; }
+    public Uri Id { get; }
+    public string Name { get; }
+    public DateTimeOffset? NotBefore { get; }
+    public string RecoveryLevel { get; }
+    public IDictionary<string, string> Tags { get; }
+    public DateTimeOffset? UpdatedOn { get; }
+    public Uri VaultUri { get; }
+    public string Version { get; }
+    public byte[] X509Thumbprint { get; }
+}
 ```
 
 ### Java
@@ -1871,7 +1801,36 @@ async def import_certificate(
 ## CertificateOperation
 ### .NET
 ```c#
+public class CertificateOperation : Operation<KeyVaultCertificateWithPolicy> {
+    public override bool HasCompleted { get; }
+    public override bool HasValue { get; }
+    public override string Id { get; }
+    public CertificateOperationProperties Properties { get; }
+    public override KeyVaultCertificateWithPolicy Value { get; }
+    public virtual void Cancel(CancellationToken cancellationToken = default);
+    public virtual Task CancelAsync(CancellationToken cancellationToken = default);
+    public virtual void Delete(CancellationToken cancellationToken = default);
+    public virtual Task DeleteAsync(CancellationToken cancellationToken = default);
+    public override Response GetRawResponse();
+    public override Response UpdateStatus(CancellationToken cancellationToken = default);
+    public override ValueTask<Response> UpdateStatusAsync(CancellationToken cancellationToken = default);
+    public override ValueTask<Response<KeyVaultCertificateWithPolicy>> WaitForCompletionAsync(CancellationToken cancellationToken = default);
+    public override ValueTask<Response<KeyVaultCertificateWithPolicy>> WaitForCompletionAsync(TimeSpan pollingInterval, CancellationToken cancellationToken);
+}
 
+public class CertificateOperationProperties : IJsonDeserializable {
+    public bool CancellationRequested { get; }
+    public string CertificateSigningRequest { get; }
+    public CertificateOperationError Error { get; }
+    public Uri Id { get; }
+    public string IssuerName { get; }
+    public string Name { get; }
+    public string RequestId { get; }
+    public string Status { get; }
+    public string StatusDetails { get; }
+    public string Target { get; }
+    public Uri VaultUri { get; }
+}
 ```
 
 ### Java
@@ -1892,7 +1851,11 @@ async def import_certificate(
 ## CertificateOperationError
 ### .NET
 ```c#
-
+public class CertificateOperationError : IJsonDeserializable {
+    public string Code { get; }
+    public CertificateOperationError InnerError { get; }
+    public string Message { get; }
+}
 ```
 
 ### Java
@@ -1913,7 +1876,11 @@ async def import_certificate(
 ## DeletedCertificate
 ### .NET
 ```c#
-
+public class DeletedCertificate : KeyVaultCertificateWithPolicy {
+    public DateTimeOffset? DeletedOn { get; }
+    public Uri RecoveryId { get; }
+    public DateTimeOffset? ScheduledPurgeDate { get; }
+}
 ```
 
 ### Java
@@ -1933,7 +1900,29 @@ async def import_certificate(
 ## CertificatePolicy
 ### .NET
 ```c#
-
+public class CertificatePolicy : IJsonSerializable, IJsonDeserializable {
+    public CertificatePolicy(string subject, string issuerName);
+    public CertificatePolicy(SubjectAlternativeNames subjectAlternativeNames, string issuerName);
+    public bool? CertificateTransparency { get; set; }
+    public string CertificateType { get; set; }
+    public CertificateContentType? ContentType { get; set; }
+    public DateTimeOffset? CreatedOn { get; }
+    public static CertificatePolicy Default { get; }
+    public bool? Enabled { get; set; }
+    public IList<string> EnhancedKeyUsage { get; }
+    public bool? Exportable { get; set; }
+    public string IssuerName { get; }
+    public CertificateKeyCurveName? KeyCurveName { get; set; }
+    public int? KeySize { get; set; }
+    public CertificateKeyType? KeyType { get; set; }
+    public IList<CertificateKeyUsage> KeyUsage { get; }
+    public IList<LifetimeAction> LifetimeActions { get; }
+    public bool? ReuseKey { get; set; }
+    public string Subject { get; }
+    public SubjectAlternativeNames SubjectAlternativeNames { get; }
+    public DateTimeOffset? UpdatedOn { get; }
+    public int? ValidityInMonths { get; set; }
+}
 ```
 
 ### Java
@@ -1954,7 +1943,18 @@ async def import_certificate(
 ## CertificateContentType
 ### .NET
 ```c#
-
+public struct CertificateContentType : IEquatable<CertificateContentType> {
+    public CertificateContentType(string value);
+    public static CertificateContentType Pem { get; }
+    public static CertificateContentType Pkcs12 { get; }
+    public static bool operator ==(CertificateContentType left, CertificateContentType right);
+    public static implicit operator CertificateContentType(string value);
+    public static bool operator !=(CertificateContentType left, CertificateContentType right);
+    public bool Equals(CertificateContentType other);
+    public override bool Equals(object obj);
+    public override int GetHashCode();
+    public override string ToString();
+}
 ```
 
 ### Java
@@ -1975,7 +1975,25 @@ async def import_certificate(
 ## CertificateKeyUsage
 ### .NET
 ```c#
-
+public struct CertificateKeyUsage : IEquatable<CertificateKeyUsage> {
+    public CertificateKeyUsage(string value);
+    public static CertificateKeyUsage CrlSign { get; }
+    public static CertificateKeyUsage DataEncipherment { get; }
+    public static CertificateKeyUsage DecipherOnly { get; }
+    public static CertificateKeyUsage DigitalSignature { get; }
+    public static CertificateKeyUsage EncipherOnly { get; }
+    public static CertificateKeyUsage KeyAgreement { get; }
+    public static CertificateKeyUsage KeyCertSign { get; }
+    public static CertificateKeyUsage KeyEncipherment { get; }
+    public static CertificateKeyUsage NonRepudiation { get; }
+    public static bool operator ==(CertificateKeyUsage left, CertificateKeyUsage right);
+    public static implicit operator CertificateKeyUsage(string value);
+    public static bool operator !=(CertificateKeyUsage left, CertificateKeyUsage right);
+    public bool Equals(CertificateKeyUsage other);
+    public override bool Equals(object obj);
+    public override int GetHashCode();
+    public override string ToString();
+}
 ```
 
 ### Java
@@ -1996,7 +2014,18 @@ async def import_certificate(
 ## CertificatePolicyAction
 ### .NET
 ```c#
-
+public struct CertificatePolicyAction : IEquatable<CertificatePolicyAction> {
+    public CertificatePolicyAction(string value);
+    public static CertificatePolicyAction AutoRenew { get; }
+    public static CertificatePolicyAction EmailContacts { get; }
+    public static bool operator ==(CertificatePolicyAction left, CertificatePolicyAction right);
+    public static implicit operator CertificatePolicyAction(string value);
+    public static bool operator !=(CertificatePolicyAction left, CertificatePolicyAction right);
+    public bool Equals(CertificatePolicyAction other);
+    public override bool Equals(object obj);
+    public override int GetHashCode();
+    public override string ToString();
+}
 ```
 
 ### Java
@@ -2017,7 +2046,12 @@ async def import_certificate(
 ## LifeTimeAction
 ### .NET
 ```c#
-
+public class LifetimeAction : IJsonSerializable, IJsonDeserializable {
+    public LifetimeAction();
+    public CertificatePolicyAction Action { get; set; }
+    public int? DaysBeforeExpiry { get; set; }
+    public int? LifetimePercentage { get; set; }
+}
 ```
 
 ### Java
@@ -2038,7 +2072,15 @@ async def import_certificate(
 ## SubjectAlternativeNames
 ### .NET
 ```c#
-
+public class SubjectAlternativeNames : IEnumerable<string>, IEnumerable, IJsonSerializable, IJsonDeserializable {
+    public static SubjectAlternativeNames FromDns(params string[] names);
+    public static SubjectAlternativeNames FromDns(IEnumerable<string> names);
+    public static SubjectAlternativeNames FromEmail(params string[] names);
+    public static SubjectAlternativeNames FromEmail(IEnumerable<string> names);
+    public static SubjectAlternativeNames FromUpn(params string[] names);
+    public static SubjectAlternativeNames FromUpn(IEnumerable<string> names);
+    public IEnumerator<string> GetEnumerator();
+}
 ```
 
 ### Java
@@ -2059,7 +2101,20 @@ async def import_certificate(
 ## CertificateKeyCurveName
 ### .NET
 ```c#
-
+public struct CertificateKeyCurveName : IEquatable<CertificateKeyCurveName> {
+    public CertificateKeyCurveName(string value);
+    public static CertificateKeyCurveName P256 { get; }
+    public static CertificateKeyCurveName P256K { get; }
+    public static CertificateKeyCurveName P384 { get; }
+    public static CertificateKeyCurveName P521 { get; }
+    public static bool operator ==(CertificateKeyCurveName left, CertificateKeyCurveName right);
+    public static implicit operator CertificateKeyCurveName(string value);
+    public static bool operator !=(CertificateKeyCurveName left, CertificateKeyCurveName right);
+    public bool Equals(CertificateKeyCurveName other);
+    public override bool Equals(object obj);
+    public override int GetHashCode();
+    public override string ToString();
+}
 ```
 
 ### Java
@@ -2080,7 +2135,21 @@ async def import_certificate(
 ## CertificateKeyType
 ### .NET
 ```c#
-
+public struct CertificateKeyType : IEquatable<CertificateKeyType> {
+    public CertificateKeyType(string value);
+    public static CertificateKeyType Ec { get; }
+    public static CertificateKeyType EcHsm { get; }
+    public static CertificateKeyType Oct { get; }
+    public static CertificateKeyType Rsa { get; }
+    public static CertificateKeyType RsaHsm { get; }
+    public static bool operator ==(CertificateKeyType left, CertificateKeyType right);
+    public static implicit operator CertificateKeyType(string value);
+    public static bool operator !=(CertificateKeyType left, CertificateKeyType right);
+    public bool Equals(CertificateKeyType other);
+    public override bool Equals(object obj);
+    public override int GetHashCode();
+    public override string ToString();
+}
 ```
 
 ### Java
@@ -2101,7 +2170,13 @@ async def import_certificate(
 ## MergeCertificateOptions
 ### .NET
 ```c#
-
+public class MergeCertificateOptions : IJsonSerializable {
+    public MergeCertificateOptions(string name, IEnumerable<byte[]> x509certificates);
+    public bool? Enabled { get; set; }
+    public string Name { get; }
+    public IDictionary<string, string> Tags { get; }
+    public IEnumerable<byte[]> X509Certificates { get; }
+}
 ```
 
 ### Java
@@ -2122,7 +2197,15 @@ async def import_certificate(
 ## ImportCertificateOptions
 ### .NET
 ```c#
-
+public class ImportCertificateOptions : IJsonSerializable {
+    public ImportCertificateOptions(string name, byte[] value, CertificatePolicy policy);
+    public bool? Enabled { get; set; }
+    public string Name { get; }
+    public string Password { get; set; }
+    public CertificatePolicy Policy { get; }
+    public IDictionary<string, string> Tags { get; }
+    public byte[] Value { get; }
+}
 ```
 
 ### Java
@@ -2143,7 +2226,10 @@ async def import_certificate(
 ## WellKnownIssuerNames
 ### .NET
 ```c#
-
+public static class WellKnownIssuerNames {
+    public const string Self = "Self";
+    public const string Unknown = "Unknown";
+}
 ```
 
 ### Java
@@ -2165,7 +2251,13 @@ async def import_certificate(
 ## AdministratorContact
 ### .NET
 ```c#
-
+public class AdministratorContact {
+    public AdministratorContact();
+    public string Email { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Phone { get; set; }
+}
 ```
 
 ### Java
@@ -2186,7 +2278,12 @@ async def import_certificate(
 ## CertificateContact
 ### .NET
 ```c#
-
+public class CertificateContact : IJsonDeserializable, IJsonSerializable {
+    public CertificateContact();
+    public string Email { get; set; }
+    public string Name { get; set; }
+    public string Phone { get; set; }
+}
 ```
 
 ### Java
@@ -2206,7 +2303,19 @@ async def import_certificate(
 ## CertificateIssuer
 ### .NET
 ```c#
-
+public class CertificateIssuer : IJsonDeserializable, IJsonSerializable {
+    public CertificateIssuer(string name);
+    public string AccountId { get; set; }
+    public IList<AdministratorContact> Administrators { get; }
+    public DateTimeOffset? CreatedOn { get; }
+    public bool? Enabled { get; set; }
+    public Uri Id { get; }
+    public string Name { get; }
+    public string OrganizationId { get; set; }
+    public string Password { get; set; }
+    public IssuerProperties Properties { get; }
+    public DateTimeOffset? UpdatedOn { get; }
+}
 ```
 
 ### Java
@@ -2226,7 +2335,11 @@ async def import_certificate(
 ## IssuerProperties
 ### .NET
 ```c#
-
+public class IssuerProperties : IJsonDeserializable, IJsonSerializable {
+    public Uri Id { get; }
+    public string Name { get; }
+    public string Provider { get; set; }
+}
 ```
 
 ### Java

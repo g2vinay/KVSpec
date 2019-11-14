@@ -141,13 +141,14 @@ Debug.WriteLine($"Certificate was returned with name {certificate.Name} which ex
 ```
 ### JS/TS
 ```ts
-  const client = new CertificatesClient(url, credential);
+  const client = new CertificateClient(url, credential);
 
   // Creating a self-signed certificate
-  const certificate = await client.createCertificate("MyCertificate", {
-    issuerParameters: { name: "Self" },
-    x509CertificateProperties: { subject: "cn=MyCert" }
+  const poller = await client.beginCreateCertificate("MyCertificate", {
+    issuerName: "Self",
+    subject: "cn=MyCert"
   });
+  const certificate = await poller.pollUntilDone();
 
   console.log("Certificate: ", certificate);
 ```
@@ -272,7 +273,7 @@ self, certificate_name: str, version: str, **kwargs: "**Any"
     certificateName: string,
     options: GetCertificateOptions = {}
   ): Promise<KeyVaultCertificateWithPolicy>
-
+  
   public async getCertificateVersion(
     certificateName: string,
     version: string,
@@ -402,7 +403,8 @@ print(
 
 ### JS/TS
 ```ts
-await client.updateCertificate("MyCertificate", "", {
+const version = "";
+await client.updateCertificate("MyCertificate", version, {
    tags: {
     customTag: "value"
    }
@@ -521,6 +523,13 @@ print("Certificate with name '{0}' was deleted.".format(deleted_certificate.name
 delete_certificate_poller.wait()
 ```
 
+### JS/TS
+
+```ts
+const deletePoller = await client.beginDeleteCertificate(certificateName);
+const deletedCertificate = await deletePoller.pollUntilDone();
+```
+
 ### API
 ### Java
 ```java
@@ -632,7 +641,8 @@ System.out.printf(" Recovered Deleted certificate with name %s and id %s", certi
 ```
 ### JS/TS
  ```ts
-await client.recoverDeletedCertificate("MyCertificate")
+const recoverPoller = await client.beginRecoverDeletedCertificate("MyCertificate");
+const certificateWithPolicy = await recoverPoller.pollUntilDone();
 ```
 
 ### API
@@ -705,6 +715,12 @@ client.purge_deleted_certificate(storage_cert_name)
 print("Certificate has been permanently deleted.")
 ```
 
+### JS/TS
+
+```ts
+await client.purgeDeletedCertificate("MyCertificate");
+```
+
 ### API
 ### Java
 ```java
@@ -759,6 +775,12 @@ print("Backup created for certificate with name '{0}'.".format(cert_name))
 print("\n.. Create a backup for an existing certificate")
 certificate_backup = client.backup_certificate(cert_name)
 print("Backup created for certificate with name '{0}'.".format(cert_name))
+```
+
+### JS/TS
+
+```ts
+const backup = await client.backupCertificate("MyCertificate");
 ```
 
 ### API
@@ -820,6 +842,14 @@ certificate = client.restore_certificate_backup(certificate_backup)
 print("Restored Certificate with name '{0}'".format(certificate.name))
 ```
 
+### JS/TS
+
+```ts
+const backup = await client.backupCertificate("MyCertificate");
+// Needs to be deleted and purged before it's restored
+await client.restoreCertificateBackup(backup.value!);
+```
+
 ### API
 ### Java
 ```java
@@ -864,6 +894,25 @@ print("\n.. List certificates from the Key Vault")
 certificates = client.list_properties_of_certificates()
 for certificate in certificates:
     print("Certificate with name '{0}' was found.".format(certificate.name))
+```
+
+```ts
+// Note: includePending is optional. It's false by default.
+
+// Listing all the available certificates in a single call.
+// The certificates we just created are still pending at this point.
+for await (const certificate of client.listPropertiesOfCertificates({ includePending: true })) {
+  console.log("Certificate from a single call: ", certificate);
+}
+
+// Listing all the available certificates by pages.
+let pageCount = 0;
+for await (const page of client.listPropertiesOfCertificates({ includePending: true }).byPage()) {
+  for (const certificate of page) {
+    console.log(`Certificate from page ${pageCount}: `, certificate);
+  }
+  pageCount++;
+}
 ```
 
 ### API
@@ -917,6 +966,23 @@ for certificate_version in certificate_versions:
         )
     )
 ```
+
+### JS/TS
+
+```ts
+for await (const properties of client.listPropertiesOfCertificateVersions(certificateName, {
+  includePending: true
+})) {
+  console.log(properties.name, properties.version!);
+}
+
+for await (const page of client.listPropertiesOfCertificateVersions(certificateName).byPage()) {
+  for (const properties of page) {
+    console.log(properties.name, properties.version!);
+  }
+}
+```
+
 ### API
 ### Java
 ```java
@@ -968,6 +1034,16 @@ for deleted_certificate in deleted_certificates:
             deleted_certificate.name, deleted_certificate.recovery_id
         )
     )
+```
+
+```ts
+for await (const deletedCertificate of client.listDeletedCertificates({ includePending: true })) {
+}
+
+for await (const page of client.listDeletedCertificates({ includePending: true }).byPage()) {
+  for (const deleteCertificate of page) {
+  }
+}
 ```
 
 ### API
@@ -1236,8 +1312,14 @@ for issuer in issuers:
 ### JS/TS
 ```ts
 // All in one call
-for await (const issuer of client.listIssuers()) {
- console.log(issuer);
+for await (const issuerProperties of client.listPropertiesOfIssuers()) {
+  console.log(issuerProperties);
+}
+// By pages
+for await (const page of client.listPropertiesOfIssuers().byPage()) {
+  for (const issuerProperties of page) {
+    console.log(issuerProperties);
+  }
 }
 ```
 
@@ -1290,7 +1372,7 @@ System.out.printf("Updated issuer with name %s, provider %s and account Id %s", 
 
 ### JS/TS
 ```ts
-await client.updateCertificateIssuer("IssuerName", {
+await client.updateIssuer("IssuerName", {
     provider: "Provider2"
 });
 ```
@@ -1330,16 +1412,16 @@ Question: Do we need this, if we have LRO/Poller support ?
 ### Usage
 ### JS/TS
 ```ts
-   const client = new CertificateClient(url, credentials);
-   await client.beginCreateCertificate("MyCertificate", {
-     issuerName: "Self",
-     subject: "cn=MyCert"
-   });
-   const poller = await client.getCertificateOperation("MyCertificate");
-   const pendingCertificate = poller.getResult();
-   console.log(pendingCertificate);
-   const certificateOperation = poller.getResult();
-   console.log(certificateOperation);
+const client = new CertificateClient(url, credentials);
+const createPoller = await client.beginCreateCertificate("MyCertificate", {
+  issuerName: "Self",
+  subject: "cn=MyCert"
+});
+const pendingCertificate = createPoller.getResult();
+console.log(pendingCertificate);
+const poller = await client.getCertificateOperation("MyCertificate");
+const certificateOperation = poller.getResult();
+console.log(certificateOperation);
 ```
 
 ### Java
@@ -1380,8 +1462,24 @@ System.out.printf("Certificate Operation status %s", certificateOperation.status
 
 ### JS/TS
 ```ts
+// Directly
 await client.cancelCertificateOperation("MyCertificate");
+
+// The poller cancel methods use client.cancelCertificateOperation in the background.
+
+// Through the create poller
+const client = new CertificateClient(url, credentials);
+const createPoller = await client.beginCreateCertificate("MyCertificate", {
+  issuerName: "Self",
+  subject: "cn=MyCert"
+});
+await createPoller.cancel();
+
+// Through the operation poller
+const operationPoller = await client.getCertificateOperation("MyCertificate");
+await operationPoller.cancel();
 ```
+
 ### API
 ### Java
 ```java
@@ -1410,6 +1508,7 @@ async def cancel_certificate_operation(self, certificate_name: str, **kwargs: "*
     certificateName: string,
     options: CancelCertificateOperationOptions = {}
   ): Promise<CertificateOperation>
+  // The poller cancel methods use client.cancelCertificateOperation in the background.
 ```
 
 ## Scenario - Delete Certificate Operation
@@ -1483,12 +1582,11 @@ for (Contact contact : certificateClient.setContacts(Arrays.asList(contactToAdd)
 
 ### JS/TS
  ```ts
-   let client = new CertificateClient(url, credentials);
-   await client.setContacts([{
-     emailAddress: "b@b.com",
-     name: "b",
-     phone: "222222222222"
-   }]);
+await client.setContacts([{
+  emailAddress: "b@b.com",
+  name: "b",
+  phone: "222222222222"
+}]);
 ```
 
 ### API
@@ -1561,7 +1659,7 @@ async def get_contacts(self, **kwargs: "**Any") -> List[CertificateContact]:
 ```
 ### JS/TS
 ```ts
-public async getContacts(options?: RequestOptionsBase): Promise<Contacts>
+public async getContacts(options: GetContactsOptions = {}): Promise<CertificateContacts>
 ```
 
 ## Scenario - Delete Certificate Contacts
@@ -1620,14 +1718,13 @@ public async deleteContacts(options: DeleteContactsOptions = {}): Promise<Certif
 ### JS/TS
  ```ts
 const client = new CertificatesClient(url, credentials);
-await client.createCertificate("MyCertificate", {
-  issuerParameters: {
-    name: "Unknown",
-    certificateTransparency: false
-   },
-   x509CertificateProperties: { subject: "cn=MyCert" }
- });
-const { csr } = await client.getCertificateOperation(certificateName);
+await client.beginCreateCertificate("MyCertificate", {
+  issuerName: "Unknown",
+  certificateTransparency: false,
+  subject: "cn=MyCert"
+});
+const operationPoller = await client.getCertificateOperation(certificateName);
+const { csr } = operationPoller.getResult();
 const base64Csr = Buffer.from(csr!).toString("base64");
 const wrappedCsr = ["-----BEGIN CERTIFICATE REQUEST-----", base64Csr, "-----END CERTIFICATE REQUEST-----"].join("\n");
 fs.writeFileSync("test.csr", wrappedCsr);

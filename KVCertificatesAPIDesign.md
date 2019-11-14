@@ -141,13 +141,14 @@ Debug.WriteLine($"Certificate was returned with name {certificate.Name} which ex
 ```
 ### JS/TS
 ```ts
-  const client = new CertificatesClient(url, credential);
+  const client = new CertificateClient(url, credential);
 
   // Creating a self-signed certificate
-  const certificate = await client.createCertificate("MyCertificate", {
-    issuerParameters: { name: "Self" },
-    x509CertificateProperties: { subject: "cn=MyCert" }
+  const poller = await client.beginCreateCertificate("MyCertificate", {
+    issuerName: "Self",
+    subject: "cn=MyCert"
   });
+  const certificate = await poller.pollUntilDone();
 
   console.log("Certificate: ", certificate);
 ```
@@ -272,7 +273,7 @@ self, certificate_name: str, version: str, **kwargs: "**Any"
     certificateName: string,
     options: GetCertificateOptions = {}
   ): Promise<KeyVaultCertificateWithPolicy>
-
+  
   public async getCertificateVersion(
     certificateName: string,
     version: string,
@@ -402,7 +403,8 @@ print(
 
 ### JS/TS
 ```ts
-await client.updateCertificate("MyCertificate", "", {
+const version = "";
+await client.updateCertificate("MyCertificate", version, {
    tags: {
     customTag: "value"
    }
@@ -521,6 +523,13 @@ print("Certificate with name '{0}' was deleted.".format(deleted_certificate.name
 delete_certificate_poller.wait()
 ```
 
+### JS/TS
+
+```ts
+const deletePoller = await client.beginDeleteCertificate(certificateName);
+const deletedCertificate = await deletePoller.pollUntilDone();
+```
+
 ### API
 ### Java
 ```java
@@ -632,7 +641,8 @@ System.out.printf(" Recovered Deleted certificate with name %s and id %s", certi
 ```
 ### JS/TS
  ```ts
-await client.recoverDeletedCertificate("MyCertificate")
+const recoverPoller = await client.beginRecoverDeletedCertificate("MyCertificate");
+const certificateWithPolicy = await recoverPoller.pollUntilDone();
 ```
 
 ### API
@@ -705,6 +715,12 @@ client.purge_deleted_certificate(storage_cert_name)
 print("Certificate has been permanently deleted.")
 ```
 
+### JS/TS
+
+```ts
+await client.purgeDeletedCertificate("MyCertificate");
+```
+
 ### API
 ### Java
 ```java
@@ -759,6 +775,12 @@ print("Backup created for certificate with name '{0}'.".format(cert_name))
 print("\n.. Create a backup for an existing certificate")
 certificate_backup = client.backup_certificate(cert_name)
 print("Backup created for certificate with name '{0}'.".format(cert_name))
+```
+
+### JS/TS
+
+```ts
+const backup = await client.backupCertificate("MyCertificate");
 ```
 
 ### API
@@ -820,6 +842,14 @@ certificate = client.restore_certificate_backup(certificate_backup)
 print("Restored Certificate with name '{0}'".format(certificate.name))
 ```
 
+### JS/TS
+
+```ts
+const backup = await client.backupCertificate("MyCertificate");
+// Needs to be deleted and purged before it's restored
+await client.restoreCertificateBackup(backup.value!);
+```
+
 ### API
 ### Java
 ```java
@@ -864,6 +894,25 @@ print("\n.. List certificates from the Key Vault")
 certificates = client.list_properties_of_certificates()
 for certificate in certificates:
     print("Certificate with name '{0}' was found.".format(certificate.name))
+```
+
+```ts
+// Note: includePending is optional. It's false by default.
+
+// Listing all the available certificates in a single call.
+// The certificates we just created are still pending at this point.
+for await (const certificate of client.listPropertiesOfCertificates({ includePending: true })) {
+  console.log("Certificate from a single call: ", certificate);
+}
+
+// Listing all the available certificates by pages.
+let pageCount = 0;
+for await (const page of client.listPropertiesOfCertificates({ includePending: true }).byPage()) {
+  for (const certificate of page) {
+    console.log(`Certificate from page ${pageCount}: `, certificate);
+  }
+  pageCount++;
+}
 ```
 
 ### API
@@ -917,6 +966,23 @@ for certificate_version in certificate_versions:
         )
     )
 ```
+
+### JS/TS
+
+```ts
+for await (const properties of client.listPropertiesOfCertificateVersions(certificateName, {
+  includePending: true
+})) {
+  console.log(properties.name, properties.version!);
+}
+
+for await (const page of client.listPropertiesOfCertificateVersions(certificateName).byPage()) {
+  for (const properties of page) {
+    console.log(properties.name, properties.version!);
+  }
+}
+```
+
 ### API
 ### Java
 ```java
@@ -968,6 +1034,16 @@ for deleted_certificate in deleted_certificates:
             deleted_certificate.name, deleted_certificate.recovery_id
         )
     )
+```
+
+```ts
+for await (const deletedCertificate of client.listDeletedCertificates({ includePending: true })) {
+}
+
+for await (const page of client.listDeletedCertificates({ includePending: true }).byPage()) {
+  for (const deleteCertificate of page) {
+  }
+}
 ```
 
 ### API
@@ -1236,8 +1312,14 @@ for issuer in issuers:
 ### JS/TS
 ```ts
 // All in one call
-for await (const issuer of client.listIssuers()) {
- console.log(issuer);
+for await (const issuerProperties of client.listPropertiesOfIssuers()) {
+  console.log(issuerProperties);
+}
+// By pages
+for await (const page of client.listPropertiesOfIssuers().byPage()) {
+  for (const issuerProperties of page) {
+    console.log(issuerProperties);
+  }
 }
 ```
 
@@ -1290,7 +1372,7 @@ System.out.printf("Updated issuer with name %s, provider %s and account Id %s", 
 
 ### JS/TS
 ```ts
-await client.updateCertificateIssuer("IssuerName", {
+await client.updateIssuer("IssuerName", {
     provider: "Provider2"
 });
 ```
@@ -1330,16 +1412,16 @@ Question: Do we need this, if we have LRO/Poller support ?
 ### Usage
 ### JS/TS
 ```ts
-   const client = new CertificateClient(url, credentials);
-   await client.beginCreateCertificate("MyCertificate", {
-     issuerName: "Self",
-     subject: "cn=MyCert"
-   });
-   const poller = await client.getCertificateOperation("MyCertificate");
-   const pendingCertificate = poller.getResult();
-   console.log(pendingCertificate);
-   const certificateOperation = poller.getResult();
-   console.log(certificateOperation);
+const client = new CertificateClient(url, credentials);
+const createPoller = await client.beginCreateCertificate("MyCertificate", {
+  issuerName: "Self",
+  subject: "cn=MyCert"
+});
+const pendingCertificate = createPoller.getResult();
+console.log(pendingCertificate);
+const poller = await client.getCertificateOperation("MyCertificate");
+const certificateOperation = poller.getResult();
+console.log(certificateOperation);
 ```
 
 ### Java
@@ -1380,8 +1462,24 @@ System.out.printf("Certificate Operation status %s", certificateOperation.status
 
 ### JS/TS
 ```ts
+// Directly
 await client.cancelCertificateOperation("MyCertificate");
+
+// The poller cancel methods use client.cancelCertificateOperation in the background.
+
+// Through the create poller
+const client = new CertificateClient(url, credentials);
+const createPoller = await client.beginCreateCertificate("MyCertificate", {
+  issuerName: "Self",
+  subject: "cn=MyCert"
+});
+await createPoller.cancel();
+
+// Through the operation poller
+const operationPoller = await client.getCertificateOperation("MyCertificate");
+await operationPoller.cancel();
 ```
+
 ### API
 ### Java
 ```java
@@ -1410,6 +1508,7 @@ async def cancel_certificate_operation(self, certificate_name: str, **kwargs: "*
     certificateName: string,
     options: CancelCertificateOperationOptions = {}
   ): Promise<CertificateOperation>
+  // The poller cancel methods use client.cancelCertificateOperation in the background.
 ```
 
 ## Scenario - Delete Certificate Operation
@@ -1483,12 +1582,11 @@ for (Contact contact : certificateClient.setContacts(Arrays.asList(contactToAdd)
 
 ### JS/TS
  ```ts
-   let client = new CertificateClient(url, credentials);
-   await client.setContacts([{
-     emailAddress: "b@b.com",
-     name: "b",
-     phone: "222222222222"
-   }]);
+await client.setContacts([{
+  emailAddress: "b@b.com",
+  name: "b",
+  phone: "222222222222"
+}]);
 ```
 
 ### API
@@ -1561,7 +1659,7 @@ async def get_contacts(self, **kwargs: "**Any") -> List[CertificateContact]:
 ```
 ### JS/TS
 ```ts
-public async getContacts(options?: RequestOptionsBase): Promise<Contacts>
+public async getContacts(options: GetContactsOptions = {}): Promise<CertificateContacts>
 ```
 
 ## Scenario - Delete Certificate Contacts
@@ -1620,14 +1718,13 @@ public async deleteContacts(options: DeleteContactsOptions = {}): Promise<Certif
 ### JS/TS
  ```ts
 const client = new CertificatesClient(url, credentials);
-await client.createCertificate("MyCertificate", {
-  issuerParameters: {
-    name: "Unknown",
-    certificateTransparency: false
-   },
-   x509CertificateProperties: { subject: "cn=MyCert" }
- });
-const { csr } = await client.getCertificateOperation(certificateName);
+await client.beginCreateCertificate("MyCertificate", {
+  issuerName: "Unknown",
+  certificateTransparency: false,
+  subject: "cn=MyCert"
+});
+const operationPoller = await client.getCertificateOperation(certificateName);
+const { csr } = operationPoller.getResult();
 const base64Csr = Buffer.from(csr!).toString("base64");
 const wrappedCsr = ["-----BEGIN CERTIFICATE REQUEST-----", base64Csr, "-----END CERTIFICATE REQUEST-----"].join("\n");
 fs.writeFileSync("test.csr", wrappedCsr);
@@ -1734,19 +1831,7 @@ public class KeyVaultCertificate : IJsonDeserializable {
 
 ### Python
 ```python
-def __init__(
-    self,
-    policy,  # type: CertificatePolicy
-    properties=None,  # type: Optional[CertificateProperties]
-    cer=None,  # type: Optional[bytes]
-    **kwargs  # type: Any
-):
-    # type: (...) -> None
-    self._properties = properties
-    self._key_id = kwargs.get("key_id", None)
-    self._secret_id = kwargs.get("secret_id")
-    self._policy = policy
-    self._cer = cer
+
 ```
 ### JS/TS
 ```ts
@@ -1768,7 +1853,6 @@ public class KeyVaultCertificateWithPolicy : KeyVaultCertificate {
 
 ### Python
 ```python
-N/A
 
 ```
 ### JS/TS
@@ -1804,13 +1888,7 @@ public class CertificateProperties : IJsonDeserializable {
 
 ### Python
 ```python
-def __init__(self, **kwargs):
-    # type: (**Any) -> None
-    self._attributes = kwargs.get("attributes", None)
-    self._id = kwargs.get("cert_id", None)
-    self._vault_id = parse_vault_id(self._id)
-    self._thumbprint = kwargs.get("thumbprint", None)
-    self._tags = kwargs.get("tags", None)
+
 ```
 ### JS/TS
 ```ts
@@ -1859,33 +1937,7 @@ public class CertificateOperationProperties : IJsonDeserializable {
 
 ### Python
 ```python
-def __init__(
-    self,
-    cert_operation_id=None,  # type: Optional[str]
-    issuer_name=None,  # type: Optional[str]
-    certificate_type=None,  # type: Optional[str]
-    certificate_transparency=False,  # type: Optional[bool]
-    csr=None,  # type: Optional[bytes]
-    cancellation_requested=False,  # type: Optional[bool]
-    status=None,  # type: Optional[str]
-    status_details=None,  # type: Optional[str]
-    error=None,  # type: Optional[models.Error]
-    target=None,  # type: Optional[str]
-    request_id=None,  # type: Optional[str]
-):
-    # type: (...) -> None
-    self._id = cert_operation_id
-    self._vault_id = parse_vault_id(cert_operation_id)
-    self._issuer_name = issuer_name
-    self._certificate_type = certificate_type
-    self._certificate_transparency = certificate_transparency
-    self._csr = csr
-    self._cancellation_requested = cancellation_requested
-    self._status = status
-    self._status_details = status_details
-    self._error = error
-    self._target = target
-    self._request_id = request_id
+
 ```
 ### JS/TS
 ```ts
@@ -1910,11 +1962,7 @@ public class CertificateOperationError : IJsonDeserializable {
 
 ### Python
 ```python
-def __init__(self, code, message, inner_error):
-    # type: (str, str, models.Error, **Any) -> None
-    self._code = code
-    self._message = message
-    self._inner_error = inner_error
+
 ```
 ### JS/TS
 ```ts
@@ -1939,18 +1987,7 @@ public class DeletedCertificate : KeyVaultCertificateWithPolicy {
 
 ### Python
 ```python
-def __init__(
-    self,
-    properties=None,  # type: Optional[CertificateProperties]
-    policy=None,  # type: Optional[CertificatePolicy]
-    cer=None,  # type: Optional[bytes]
-    **kwargs  # type: **Any
-):
-    # type: (...) -> None
-    super(DeletedCertificate, self).__init__(properties=properties, policy=policy, cer=cer, **kwargs)
-    self._deleted_date = kwargs.get("deleted_date", None)
-    self._recovery_id = kwargs.get("recovery_id", None)
-    self._scheduled_purge_date = kwargs.get("scheduled_purge_date", None)
+
 ```
 ### JS/TS
 ```ts
@@ -1992,29 +2029,7 @@ public class CertificatePolicy : IJsonSerializable, IJsonDeserializable {
 
 ### Python
 ```python
-def __init__(
-    self,
-    issuer_name,  # type: str
-    **kwargs  # type: **Any
-):
-    # type: (...) -> None
-    self._issuer_name = issuer_name
-    self._subject_name = kwargs.pop("subject_name", None)
-    self._subject_alternative_names = kwargs.pop("subject_alternative_names", None) or None
-    self._attributes = kwargs.pop("attributes", None)
-    self._id = kwargs.pop("cert_policy_id", None)
-    self._exportable = kwargs.pop("exportable", None)
-    self._key_type = kwargs.pop("key_type", None)
-    self._key_size = kwargs.pop("key_size", None)
-    self._reuse_key = kwargs.pop("reuse_key", None)
-    self._curve = kwargs.pop("curve", None)
-    self._ekus = kwargs.pop("ekus", None)
-    self._key_usage = kwargs.pop("key_usage", None)
-    self._content_type = kwargs.pop("content_type", None)
-    self._validity_in_months = kwargs.pop("validity_in_months", None)
-    self._lifetime_actions = kwargs.pop("lifetime_actions", None)
-    self._certificate_type = kwargs.pop("certificate_type", None)
-    self._certificate_transparency = kwargs.pop("certificate_transparency", None)
+
 ```
 ### JS/TS
 ```ts
@@ -2046,12 +2061,8 @@ public struct CertificateContentType : IEquatable<CertificateContentType> {
 
 ### Python
 ```python
-class SecretContentType(str, Enum):
-    """Content type of the secrets as specified in Certificate Policy"""
 
-    PKCS12 = "application/x-pkcs12"
-    PEM = "application/x-pem-file"
-    ```
+```
 ### JS/TS
 ```ts
 
@@ -2089,18 +2100,7 @@ public struct CertificateKeyUsage : IEquatable<CertificateKeyUsage> {
 
 ### Python
 ```python
-class KeyUsageType(str, Enum):
-    """The supported types of key usages"""
 
-    digital_signature = "digitalSignature"
-    non_repudiation = "nonRepudiation"
-    key_encipherment = "keyEncipherment"
-    data_encipherment = "dataEncipherment"
-    key_agreement = "keyAgreement"
-    key_cert_sign = "keyCertSign"
-    crl_sign = "cRLSign"
-    encipher_only = "encipherOnly"
-    decipher_only = "decipherOnly"
 ```
 ### JS/TS
 ```ts
@@ -2132,11 +2132,7 @@ public struct CertificatePolicyAction : IEquatable<CertificatePolicyAction> {
 
 ### Python
 ```python
-class CertificatePolicyAction(str, Enum):
-    """The supported action types for the lifetime of a certificate"""
 
-    email_contacts = "EmailContacts"
-    auto_renew = "AutoRenew"
 ```
 ### JS/TS
 ```ts
@@ -2162,11 +2158,7 @@ public class LifetimeAction : IJsonSerializable, IJsonDeserializable {
 
 ### Python
 ```python
-def __init__(self, action, lifetime_percentage=None, days_before_expiry=None):
-    # type: (CertificatePolicyAction, Optional[int], Optional[int]) -> None
-    self._lifetime_percentage = lifetime_percentage
-    self._days_before_expiry = days_before_expiry
-    self._action = action
+
 ```
 ### JS/TS
 ```ts
@@ -2195,10 +2187,7 @@ public class SubjectAlternativeNames : IEnumerable<string>, IEnumerable, IJsonSe
 
 ### Python
 ```python
-# Might end up having it, might not. If we do, this is the implementation
-def __init__(self, subject_type, subject_values):
-    self._subject_type = subject_type
-    self._subject_values = subject_values
+
 ```
 ### JS/TS
 ```ts
@@ -2232,13 +2221,7 @@ public struct CertificateKeyCurveName : IEquatable<CertificateKeyCurveName> {
 
 ### Python
 ```python
-class KeyCurveName(str, Enum):
-    """Supported elliptic curves"""
 
-    p_256 = "P-256"  #: The NIST P-256 elliptic curve, AKA SECG curve SECP256R1.
-    p_384 = "P-384"  #: The NIST P-384 elliptic curve, AKA SECG curve SECP384R1.
-    p_521 = "P-521"  #: The NIST P-521 elliptic curve, AKA SECG curve SECP521R1.
-    p_256_k = "P-256K"  #: The SECG SECP256K1 elliptic curve.
 ```
 ### JS/TS
 ```ts
@@ -2273,18 +2256,7 @@ public struct CertificateKeyType : IEquatable<CertificateKeyType> {
 
 ### Python
 ```python
-class KeyUsageType(str, Enum):
-    """The supported types of key usages"""
 
-    digital_signature = "digitalSignature"
-    non_repudiation = "nonRepudiation"
-    key_encipherment = "keyEncipherment"
-    data_encipherment = "dataEncipherment"
-    key_agreement = "keyAgreement"
-    key_cert_sign = "keyCertSign"
-    crl_sign = "cRLSign"
-    encipher_only = "encipherOnly"
-    decipher_only = "decipherOnly"
 ```
 ### JS/TS
 ```ts
@@ -2311,7 +2283,7 @@ public class MergeCertificateOptions : IJsonSerializable {
 
 ### Python
 ```python
-N/A
+
 ```
 ### JS/TS
 ```ts
@@ -2340,7 +2312,7 @@ public class ImportCertificateOptions : IJsonSerializable {
 
 ### Python
 ```python
-N/A
+
 ```
 ### JS/TS
 ```ts
@@ -2364,11 +2336,7 @@ public static class WellKnownIssuerNames {
 
 ### Python
 ```python
-class WellKnownIssuerNames(str, Enum):
-    """Collection of well-known issuer names"""
 
-    Self = "Self"  #: Use this issuer for a self-signed certificate
-    Unknown = "Unknown"
 ```
 ### JS/TS
 ```ts
@@ -2396,12 +2364,7 @@ public class AdministratorContact {
 
 ### Python
 ```python
-def __init__(self, first_name=None, last_name=None, email=None, phone=None):
-    # type: (Optional[str], Optional[str], Optional[str], Optional[str]) -> None
-    self._first_name = first_name
-    self._last_name = last_name
-    self._phone = phone
-    self._email = email
+
 ```
 ### JS/TS
 ```ts
@@ -2427,11 +2390,7 @@ public class CertificateContact : IJsonDeserializable, IJsonSerializable {
 
 ### Python
 ```python
-def __init__(self, email=None, name=None, phone=None):
-    # type: (Optional[str], Optional[str], Optional[str]) -> None
-    self._email = email
-    self._name = name
-    self._phone = phone
+
 ```
 ### JS/TS
 ```ts
@@ -2463,22 +2422,7 @@ public class CertificateIssuer : IJsonDeserializable, IJsonSerializable {
 
 ### Python
 ```python
-def __init__(
-    self,
-    properties=None,  # type: Optional[IssuerProperties]
-    attributes=None,  # type: Optional[models.IssuerAttributes]
-    account_id=None,  # type: Optional[str]
-    password=None,  # type: Optional[str]
-    organization_id=None,  # type: Optional[str]
-    admin_details=None,  # type: Optional[List[AdministratorContact]]
-):
-    # type: (...) -> None
-    self._properties = properties
-    self._attributes = attributes
-    self._account_id = account_id
-    self._password = password
-    self._organization_id = organization_id
-    self._admin_details = admin_details
+
 ```
 ### JS/TS
 ```ts
@@ -2502,11 +2446,7 @@ public class IssuerProperties : IJsonDeserializable, IJsonSerializable {
 
 ### Python
 ```python
-def __init__(self, provider=None, **kwargs):
-    # type: (Optional[str], **Any) -> None
-    self._id = kwargs.get("issuer_id", None)
-    self._vault_id = parse_vault_id(self._id)
-    self._provider = provider
+
 ```
 ### JS/TS
 ```ts

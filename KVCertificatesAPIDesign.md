@@ -41,6 +41,15 @@ public class CertificateClientOptions : ClientOptions {
 
 ### Python
 
+```python
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.certificates import CertificateClient, CertificatePolicy
+
+credential = DefaultAzureCredential()
+
+certificate_client = CertificateClient(vault_url="https://my-key-vault.vault.azure.net/", credential=credential)
+```
+
 ### JS/TS
 
 ```ts
@@ -74,6 +83,9 @@ public virtual Uri VaultUri { get; }
 ```
 
 #### Python
+```python
+certificate_client.vault_url
+```
 
 #### JS/TS
 
@@ -97,7 +109,7 @@ certificateAsyncClient.beginCreateCertificate("certificateName", certPolicy)
         System.out.println(pollResponse.getValue().getStatus());
         System.out.println(pollResponse.getValue().getStatusDetails());
     });
-    
+
 // Sync example
 SyncPoller<CertificateOperation, KeyVaultCertificate> certificatePoller = certificateClient
     .beginCreateCertificate("certificateName", certificatePolicy);
@@ -259,7 +271,7 @@ public Mono<Response<KeyVaultCertificateWithPolicy>> getCertificateWithResponse(
 public Mono<Response<KeyVaultCertificate>> getCertificateVersionWithResponse(String name, String version) {}
 public Mono<KeyVaultCertificate> getCertificateVersion(String name, String version) {}
 
-//Sync API    
+//Sync API
 public KeyVaultCertificateWithPolicy getCertificate(String name) {}
 public Response<KeyVaultCertificateWithPolicy> getCertificateWithResponse(String name) {}
 public Response<KeyVaultCertificate> getCertificateVersionWithResponse(String name, String version, Context context) {}
@@ -288,7 +300,7 @@ self, certificate_name: str, version: str, **kwargs: "**Any"
     certificateName: string,
     options: GetCertificateOptions = {}
   ): Promise<KeyVaultCertificateWithPolicy>
-  
+
   public async getCertificateVersion(
     certificateName: string,
     version: string,
@@ -433,8 +445,8 @@ await client.updateCertificate("MyCertificate", version, {
 
 public Mono<KeyVaultCertificate> updateCertificateProperties(CertificateProperties certificateProperties) {}
 public Mono<Response<KeyVaultCertificate>> updateCertificatePropertiesWithResponse(CertificateProperties certificateProperties) {}
-    
-    
+
+
 public KeyVaultCertificate updateCertificateProperties(CertificateProperties certificateProperties) {}
 public Response<KeyVaultCertificate> updateCertificatePropertiesWithResponse(CertificateProperties certificateProperties, Context context) {}
 ```
@@ -617,7 +629,7 @@ client.getDeletedCertificate("MyDeletedCertificate");
 //Async
 public Mono<DeletedCertificate> getDeletedCertificate(String name) {}
 public Mono<Response<DeletedCertificate>> getDeletedCertificateWithResponse(String name) {}
-    
+
 //Sync
 public DeletedCertificate getDeletedCertificate(String name) {}
 public Response<DeletedCertificate> getDeletedCertificateWithResponse(String name, Context context) {}
@@ -651,7 +663,7 @@ certificateAsyncClient.beginRecoverDeletedCertificate("deletedCertificateName")
         System.out.println("Recover Certificate Name: " + pollResponse.getValue().getName());
         System.out.println("Recover Certificate Id: " + pollResponse.getValue().getId());
     });
-    
+
 //Sync
 SyncPoller<KeyVaultCertificate, Void> recoverCertPoller = certificateClient
     .beginRecoverDeletedCertificate("deletedCertificateName");
@@ -1006,7 +1018,7 @@ for await (const page of client.listPropertiesOfCertificateVersions(certificateN
 ### Java
 ```java
 public PagedFlux<CertificateProperties> listPropertiesOfCertificateVersions(String name) {}
-    
+
 public PagedIterable<CertificateProperties> listPropertiesOfCertificateVersions(String name) {}
 public PagedIterable<CertificateProperties> listPropertiesOfCertificateVersions(String name, Context context) {}
 ```
@@ -2820,18 +2832,14 @@ public final class CertificateKeyType extends ExpandableStringEnum<CertificateKe
 
 ### Python
 ```python
-class KeyUsageType(str, Enum):
-    """The supported types of key usages"""
+class KeyType(str, Enum):
+  """Supported key types"""
 
-    digital_signature = "digitalSignature"
-    non_repudiation = "nonRepudiation"
-    key_encipherment = "keyEncipherment"
-    data_encipherment = "dataEncipherment"
-    key_agreement = "keyAgreement"
-    key_cert_sign = "keyCertSign"
-    crl_sign = "cRLSign"
-    encipher_only = "encipherOnly"
-    decipher_only = "decipherOnly"
+  ec = "EC"  #: Elliptic Curve
+  ec_hsm = "EC-HSM"  #: Elliptic Curve with a private key which is not exportable from the HSM
+  rsa = "RSA"  #: RSA (https://tools.ietf.org/html/rfc3447)
+  rsa_hsm = "RSA-HSM"  #: RSA with a private key which is not exportable from the HSM
+  oct = "oct"  #: Octet sequence (used to represent symmetric keys)
 ```
 ### JS/TS
 ```ts

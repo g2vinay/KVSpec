@@ -2724,22 +2724,28 @@ def __init__(self, subject_type, subject_values):
 ### JS/TS
 ```ts
 /**
- * The subject alternate names of a X509 object.
+ * An interface representing the alternative names of the subject of a certificate policy.
  */
-export interface SubjectAlternativeNames {
+export interface SubjectAlternativeNamesAll {
   /**
    * Email addresses.
    */
-  emails?: string[];
+  emails: ArrayOneOrMore<string>;
   /**
    * Domain names.
    */
-  dnsNames?: string[];
+  dnsNames: ArrayOneOrMore<string>;
   /**
    * User principal names.
    */
-  upns?: string[];
+  userPrincipalNames: ArrayOneOrMore<string>;
 }
+
+/**
+ * Alternatives to the subject property.
+ * If present, it should at least have one of the properties of SubjectAlternativeNamesAll.
+ */
+export type SubjectAlternativeNames = RequireAtLeastOne<SubjectAlternativeNamesAll>;
 
 ```
 

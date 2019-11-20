@@ -1130,19 +1130,19 @@ System.out.printf("Created Issuer with name %s provider %s", returnedIssuer.getN
  ```python
 # async
 # First we specify the AdministratorContact for our issuers.
-admin_details = [
+admin_contacts = [
     AdministratorContact(first_name="John", last_name="Doe", email="admin@microsoft.com", phone="4255555555")
 ]
 
 # Next we create an issuer with these administrator details
 # The name field refers to the name you would like to get the issuer. There are also pre-set names, such as 'Self' and 'Unknown'
 await client.create_issuer(
-    issuer_name="issuer1", provider="Test", account_id="keyvaultuser", admin_details=admin_details, enabled=True
+    issuer_name="issuer1", provider="Test", account_id="keyvaultuser", admin_contacts=admin_contacts, enabled=True
 )
 
 # sync
 client.create_issuer(
-    issuer_name="issuer1", provider="Test", account_id="keyvaultuser", admin_details=admin_details, enabled=True
+    issuer_name="issuer1", provider="Test", account_id="keyvaultuser", admin_contacts=admin_contacts, enabled=True
 )
 ```
 ### JS/TS
@@ -2382,7 +2382,6 @@ def __init__(
     # type: (...) -> None
     self._issuer_name = issuer_name
     self._subject_name = kwargs.pop("subject_name", None)
-    self._subject_alternative_names = kwargs.pop("subject_alternative_names", None) or None
     self._attributes = kwargs.pop("attributes", None)
     self._id = kwargs.pop("cert_policy_id", None)
     self._exportable = kwargs.pop("exportable", None)
@@ -2397,6 +2396,9 @@ def __init__(
     self._lifetime_actions = kwargs.pop("lifetime_actions", None)
     self._certificate_type = kwargs.pop("certificate_type", None)
     self._certificate_transparency = kwargs.pop("certificate_transparency", None)
+    self._san_emails = kwargs.pop("san_emails", None) or None
+    self._san_dns_names = kwargs.pop("san_dns_names", None) or None
+    self._san_upns = kwargs.pop("san_upns", None) or None
 ```
 ### JS/TS
 ```ts
@@ -3138,7 +3140,7 @@ def __init__(
     account_id=None,  # type: Optional[str]
     password=None,  # type: Optional[str]
     organization_id=None,  # type: Optional[str]
-    admin_details=None,  # type: Optional[List[AdministratorContact]]
+    admin_contacts=None,  # type: Optional[List[AdministratorContact]]
 ):
     # type: (...) -> None
     self._properties = properties
@@ -3146,7 +3148,7 @@ def __init__(
     self._account_id = account_id
     self._password = password
     self._organization_id = organization_id
-    self._admin_details = admin_details
+    self._admin_contacts = admin_contacts
 ```
 ### JS/TS
 ```ts

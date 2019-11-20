@@ -2305,8 +2305,9 @@ export interface DeletedCertificate extends KeyVaultCertificateWithPolicy {
 ### .NET
 ```c#
 public class CertificatePolicy : IJsonSerializable, IJsonDeserializable {
-    public CertificatePolicy(string subject, string issuerName);
-    public CertificatePolicy(SubjectAlternativeNames subjectAlternativeNames, string issuerName);
+    public CertificatePolicy(string issuerName, string subject);
+    public CertificatePolicy(string issuerName, SubjectAlternativeNames subjectAlternativeNames);
+    public CertificatePolicy(string issuerName, string subject, SubjectAlternativeNames subjectAlternativeNames);
     public bool? CertificateTransparency { get; set; }
     public string CertificateType { get; set; }
     public CertificateContentType? ContentType { get; set; }
@@ -2691,14 +2692,11 @@ export interface LifetimeAction {
 ## SubjectAlternativeNames
 ### .NET
 ```c#
-public class SubjectAlternativeNames : IEnumerable<string>, IEnumerable, IJsonSerializable, IJsonDeserializable {
-    public static SubjectAlternativeNames FromDns(params string[] names);
-    public static SubjectAlternativeNames FromDns(IEnumerable<string> names);
-    public static SubjectAlternativeNames FromEmail(params string[] names);
-    public static SubjectAlternativeNames FromEmail(IEnumerable<string> names);
-    public static SubjectAlternativeNames FromUpn(params string[] names);
-    public static SubjectAlternativeNames FromUpn(IEnumerable<string> names);
-    public IEnumerator<string> GetEnumerator();
+public class SubjectAlternativeNames : {
+    public SubjectAlternativeNames();
+    public IList<string> DnsNames { get; }
+    public IList<string> Emails { get; }
+    public IList<string> UserPrincipalNames { get; }
 }
 ```
 
@@ -3095,7 +3093,7 @@ export type CertificateContact = RequireAtLeastOne<CertificateContactAll> | unde
 public class CertificateIssuer : IJsonDeserializable, IJsonSerializable {
     public CertificateIssuer(string name);
     public string AccountId { get; set; }
-    public IList<AdministratorContact> Administrators { get; }
+    public IList<AdministratorContact> AdministratorContacts { get; }
     public DateTimeOffset? CreatedOn { get; }
     public bool? Enabled { get; set; }
     public Uri Id { get; }

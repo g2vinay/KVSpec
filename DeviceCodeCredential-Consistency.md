@@ -53,7 +53,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  | C++ | ? | ? | ? | ? 
  
  
-   *Authentication Record**
+  **Authentication Record**
 
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  
@@ -66,7 +66,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  | C++ | ? | ? | ? | ? 
  
  
-   **Automatic Authentication**
+  **Automatic Authentication**
 
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  
@@ -79,7 +79,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  | C++ | ? | ? | ? | ? 
  
  
-    **Unencrypted Cache**
+  **Unencrypted Cache**
 
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  
@@ -92,7 +92,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  | C++ | ? | ? | ? | ? 
  
  
-   **Persistent Cache**
+ **Persistent Cache**
 
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  

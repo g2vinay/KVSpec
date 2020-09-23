@@ -4,22 +4,22 @@
 
 **AuthorityHost**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Must be a valid Uri, validation done by URI constructor | N/A 
+ | Java | ? | ? | ? | ? | ? 
+ | JS/TS | ? | ? | ? | ? | ? 
+ | Python | ? | ? | ? | ? | ? 
+ | Go | ? | ? | ? | ? | ? 
+ | C | ? | ? | ? | ? | ? 
+ | C++ | ? | ? | ? | ? | ? 
  
  
  **ClientId**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `clientId` or `ClientId` | No | "04b07795-8ddb-461a-bbee-02f9e1bf7b46" | If specified, must be non-null |  ArgumentNullException "clientId"
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -30,9 +30,9 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
   **TenantId**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `tenantId` or `TenantId` | No | "organizations" | None | N/A 
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -42,9 +42,9 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
   **Callback / Challenge**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `deviceCodeCallback` | No | Default implementation writes message to console | If specified must be non-null | ArgumentNullException "deviceCodeCallback"
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -55,9 +55,9 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
   **Authentication Record**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | AuthenticationRecord | No | null | none | N/A 
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -68,9 +68,9 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
   **Automatic Authentication**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `DisableAutomaticAuthentication` | No | false | none | N/A 
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -81,9 +81,9 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
   **Unencrypted Cache**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `AllowUnencryptedCache` | No | false | none | N/A 
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -94,9 +94,9 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
  **Persistent Cache**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `EnablePersistentCache` | No | false | none | N/A 
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -148,8 +148,8 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
 ```
 
 **.NET**
-```
-??
+```c#
+var credential = new DeviceCodeCredential();
 ```
 
 **Python**
@@ -170,8 +170,17 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
 ```
 
 **.NET**
-```
-??
+```c#
+options = new DeviceCodeCredentialOptions {
+  AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
+  ClientId = "xxx",
+  TenantId = "xxx",
+  DisableAutomaticAuthentication = false,
+  EnablePersistentCache = false,
+  AllowUnencryptedCache = false,
+  AuthenticationRecord = authRecord
+}
+var credential = new DeviceCodeCredential()
 ```
 
 **Python**
@@ -195,7 +204,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
 
 Language | Message |
 --- | --- | 
- | .NET | ? | 
+ | .NET | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
  | Java | ? | 
  | JS/TS | ? | 
  | Python | ? | 

@@ -226,7 +226,7 @@ Language | Message |
 
 **Token Fetch Success**
 
- Language | Exception Type | Log Message | 
+ Language | Log Level | Log Message | 
 --- | --- | --- |
  | .NET | ? | ? |
  | Java | ? | ? | 

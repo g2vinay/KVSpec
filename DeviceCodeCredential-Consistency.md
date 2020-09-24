@@ -7,7 +7,7 @@
 Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- | --- |---  
  | .NET | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Must be a valid Uri, validation done by URI constructor | N/A 
- | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI, 2. Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host.", 2. "Authority host must use `HTTPS` scheme."
+ | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI <br>2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host." <br>2."Authority host must use `HTTPS` scheme."
  | JS/TS | ? | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? | ? 
@@ -20,7 +20,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- | --- |---  
  | .NET | `clientId` or `ClientId` | No | "04b07795-8ddb-461a-bbee-02f9e1bf7b46" | If specified, must be non-null |  ArgumentNullException "clientId"
- | Java | `clientId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for clientId property in DeviceCodeCredentialBuilder.", 2."Client id must have characters in the range of [A-Z], [0-9], [a-z], '-'"
+ | Java | `clientId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for clientId property in DeviceCodeCredentialBuilder."<br> 2."Client id must have characters in the range of [A-Z], [0-9], [a-z], '-'"
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
@@ -129,7 +129,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |--- |--- 
  | .NET | ? | ? | ? | ? | ?
- | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host.", 2."Authority host must use `HTTPS` scheme."
+ | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host."<br> 2."Authority host must use `HTTPS` scheme."
  | JS/TS | ? | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? | ? 

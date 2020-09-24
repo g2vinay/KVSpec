@@ -214,15 +214,37 @@ Language | Message |
  
  **Authentication Failure Message**
 
- Language | Exception Type | Message | 
+**.NET**
+ Scenario | Exception Type | Message | 
 --- | --- | --- |
- | .NET | ? | ? |
- | Java | ? | ? | 
- | JS/TS | ? | ? | 
- | Python | ? | ? | 
- | Go | ? | ? | 
- | C | ? | ? | 
- | C++ | ? | ? |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ 
+ **Java**
+ Scenario | Exception Type | Message | 
+--- | --- | --- |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ 
+ **Python**
+ Scenario | Exception Type | Message | 
+--- | --- | --- |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ 
+ **JS/TS**
+ Scenario | Exception Type | Message | 
+--- | --- | --- |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
 
 
 //TODO: Add and Discuss Language specific error messages (which can be potentially applied across the board)
@@ -232,30 +254,41 @@ Language | Message |
  </br>
 
 ### Logging Scenarios 
+Key Scenarios:
+1. Token Fetch Success
+2. Token Fetch Failure
 
-**Token Fetch Success**
-
- Language | Log Level | Log Message | 
+**.NET**
+ Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | .NET | ? | ? |
- | Java | ? | ? | 
- | JS/TS | ? | ? | 
- | Python | ? | ? | 
- | Go | ? | ? | 
- | C | ? | ? | 
- | C++ | ? | ? |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
  
- **Token Fetch Failure**
-
- Language | Log Level| Log Message | 
+ **Java**
+ Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | .NET | ? | ? |
- | Java | ? | ? | 
- | JS/TS | ? | ? | 
- | Python | ? | ? | 
- | Go | ? | ? | 
- | C | ? | ? | 
- | C++ | ? | ? |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ 
+ **Python**
+ Scenario | Log Level | Log Message | 
+--- | --- | --- |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ 
+ **JS/TS**
+ Scenario | Log Level | Log Message | 
+--- | --- | --- |
+ | ? | ? | ? |
+ | ? | ? | ? | 
+ | ? | ? | ? | 
+ | ? | ? | ? | 
 
 
 //TODO: Add and Discuss Language specific logging scenarios (which can be potentially applied across the board)

@@ -231,7 +231,7 @@ Language | Message |
  **Authentication Failure Message**
 
 **.NET**
- Scenario | Exception Type | Message | 
+ Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
  | ? | ? | ? |
  | ? | ? | ? | 
@@ -239,15 +239,14 @@ Language | Message |
  | ? | ? | ? | 
  
  **Java**
- Scenario | Exception Type | Message | 
+ Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | ? | ? | ? |
- | ? | ? | ? | 
- | ? | ? | ? | 
- | ? | ? | ? | 
+ | Automatic Authentication disabled and Get Token is called without calling authenticate first  | `AuthenticationRequiredException` | "Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication." |
+ | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableException` | "Authenticating in this environment requires specifying a TokenRequestContext." | 
+ | Authentication issue on MSAL end | `ClientAuthenticationException` | "Failed to acquire token with device code" | 
  
  **Python**
- Scenario | Exception Type | Message | 
+ Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
  | ? | ? | ? |
  | ? | ? | ? | 
@@ -255,7 +254,7 @@ Language | Message |
  | ? | ? | ? | 
  
  **JS/TS**
- Scenario | Exception Type | Message | 
+ Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
  | ? | ? | ? |
  | ? | ? | ? | 
@@ -285,10 +284,9 @@ Key Scenarios:
  **Java**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | ? | ? | ? |
- | ? | ? | ? | 
- | ? | ? | ? | 
- | ? | ? | ? | 
+ | Token Fetch Success | INFO | Azure Identity => getToken() result for scopes [{}]: SUCCESS|
+ | Token Fetch Failure | ERROR | Azure Identity => ERROR in getToken() call for scopes [{}]: {} | 
+ | Any Exception | ERROR | Error Message in the Exception | 
  
  **Python**
  Scenario | Log Level | Log Message | 

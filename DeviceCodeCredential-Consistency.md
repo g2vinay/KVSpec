@@ -209,15 +209,18 @@ var credential = new DeviceCodeCredential()
 
 **JS/TS**
 ```
-??
+const credential = new DeviceCodeCredential(
+    "TENANT_ID",
+    "CLIENT_ID",
+    (details) => console.log({ details }),
+    { authorityHost: "https://adfs.redmond.azurestack.corp.microsoft.com" }
+  );
 ```
  </br>
  </br>
  </br>
  
 ### Messages (Success + Failure) displayed to user.
-
-#### Minimal Credential Config needed by user
 
 **Device Code Info Message**
 
@@ -259,7 +262,7 @@ Language | Message |
  **JS/TS**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | ? | ? | ? |
+ | Authentication issue on MSAL end | `Error` | "Device Authentication Error + MSAL Error Details" | 
  | ? | ? | ? | 
  | ? | ? | ? | 
  | ? | ? | ? | 
@@ -302,7 +305,7 @@ Key Scenarios:
  **JS/TS**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | ? | ? | ? |
+ | Error from MSAL | INFO | Message in the Error | 
  | ? | ? | ? | 
  | ? | ? | ? | 
  | ? | ? | ? | 

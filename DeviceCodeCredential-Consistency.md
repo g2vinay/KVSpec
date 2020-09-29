@@ -8,7 +8,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Must be a valid Uri, validation done by URI constructor | N/A 
  | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI <br>2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host." <br>2."Authority host must use `HTTPS` scheme."
- | JS/TS | ? | ? | ? | ? | ? 
+ | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | ? | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? | ? 
  | C | ? | ? | ? | ? | ? 
@@ -21,7 +21,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `clientId` or `ClientId` | No | "04b07795-8ddb-461a-bbee-02f9e1bf7b46" | If specified, must be non-null |  ArgumentNullException "clientId"
  | Java | `clientId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for clientId property in DeviceCodeCredentialBuilder."<br> 2."Client id must have characters in the range of [A-Z], [0-9], [a-z], '-'"
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | `clientId` | Yes | N/A | None | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -34,7 +34,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `tenantId` or `TenantId` | No | "organizations" | None | N/A 
  | Java | `tenantId` | No | "organizations" | None | N/A 
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | `tenantId` | No | "organizations" | None | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -46,7 +46,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `deviceCodeCallback` | No | Default implementation writes message to console | If specified must be non-null | ArgumentNullException "deviceCodeCallback"
  | Java | `challengeConsumer` | No | Default implementation writes message to console | If specified must be non-null | "Must provide non-null values for challengeConsumer property in DeviceCodeCredentialBuilder."
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | `userPromptCallback` | NO | Default implementation writes message to console | None | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -59,7 +59,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `AuthenticationRecord` | No | null | None | N/A 
  | Java | `authenticationRecord` | No | null | None | N/A 
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | N/A | N/A | N/A | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -72,7 +72,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `DisableAutomaticAuthentication` | No | false | None | N/A 
  | Java | `disableAutomaticAuthentication` | No | false | None | N/A
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | N/A | N/A | N/A | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -85,7 +85,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `AllowUnencryptedCache` | No | false | None | N/A 
  | Java | `allowUnencryptedCache` | No | false | None | N/A
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | N/A | N/A | N/A | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -98,7 +98,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `EnablePersistentCache` | No | false | None | N/A 
  | Java | `enablePersistentCache` | No | false | None | N/A
- | JS/TS | ? | ? | ? | ? 
+ | JS/TS | N/A | N/A | N/A | N/A 
  | Python | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
@@ -130,7 +130,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- |--- |--- 
  | .NET | ? | ? | ? | ? | ?
  | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host."<br> 2."Authority host must use `HTTPS` scheme."
- | JS/TS | ? | ? | ? | ? | ? 
+ | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | ? | ? | ? | ? | ? 
  | Go | ? | ? | ? | ? | ? 
  | C | ? | ? | ? | ? | ? 
@@ -163,7 +163,10 @@ var credential = new DeviceCodeCredential();
 
 **JS/TS**
 ```
-??
+const credential = new DeviceCodeCredential(
+    undefined,
+    "CLIENT_ID"
+  );
 ```
 
 #### Maximum Credential Config possible by user
@@ -222,7 +225,7 @@ Language | Message |
 --- | --- | 
  | .NET | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
  | Java | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
- | JS/TS | ? | 
+ | JS/TS | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
  | Python | ? | 
  | Go | ? | 
  | C | ? | 

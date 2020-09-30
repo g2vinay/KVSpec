@@ -9,8 +9,8 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | .NET | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Must be a valid Uri, validation done by URI constructor | N/A 
  | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI <br>2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host." <br>2."Authority host must use `HTTPS` scheme."
  | JS/TS | `authorityHost` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
- | Python | `authority` | No | "https://login.microsoftonline.com/ | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
- | Go | ? | ? | ? | ? | ? 
+ | Python | `authority` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
+ | Go | `AuthorityHost` | No | "https://login.microsoftonline.com/" | None | N/A
  
  
  **ClientId**
@@ -21,7 +21,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `clientId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for clientId property in DeviceCodeCredentialBuilder."<br> 2."Client id must have characters in the range of [A-Z], [0-9], [a-z], '-'"
  | JS/TS | `clientId` | Yes | N/A | None | N/A 
  | Python | `client_id` | Yes | N/A | None | N/A 
- | Go | ? | ? | ? | ? 
+ | Go | `clientID` | ? | Yes | N/A | None | N/A 
  
  
   **TenantId**
@@ -32,7 +32,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `tenantId` | No | "organizations" | None | N/A 
  | JS/TS | `tenantId` | No | "organizations" | None | N/A 
  | Python | `tenant_id` | No | "organizations" | None | N/A
- | Go | ? | ? | ? | ? 
+ | Go | `tenantID` | No | "organizations" | None | N/A 
  
   **Callback / Challenge**
 
@@ -42,7 +42,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `challengeConsumer` | No | Default implementation writes message to console | If specified must be non-null | "Must provide non-null values for challengeConsumer property in DeviceCodeCredentialBuilder."
  | JS/TS | `userPromptCallback` | No | Default implementation writes message to console | None | N/A 
  | Python | `prompt_callback` | No | Default implementation writes message to console | None | N/A 
- | Go | ? | ? | ? | ? 
+ | Go | `callback` | Yes | N/A | None | N/A 
  
  
   **Authentication Record**
@@ -53,7 +53,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `authenticationRecord` | No | null | None | N/A 
  | JS/TS | N/A | N/A | N/A | N/A 
  | Python | `authentication_record` | No | None | None | N/A 
- | Go | ? | ? | ? | ? 
+ | Go | N/A | N/A | N/A | N/A 
  
  
   **Automatic Authentication**
@@ -64,7 +64,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `disableAutomaticAuthentication` | No | false | None | N/A
  | JS/TS | N/A | N/A | N/A | N/A 
  | Python | `disable_automatic_authentication` | No | False | None | N/A
- | Go | ? | ? | ? | ? 
+ | Go | N/A | N/A | N/A | N/A 
  
  
   **Unencrypted Cache**
@@ -75,7 +75,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `allowUnencryptedCache` | No | false | None | N/A
  | JS/TS | N/A | N/A | N/A | N/A 
  | Python | `allow_unencrypted_cache` | No | False | None | N/A 
- | Go | ? | ? | ? | ?  
+ | Go | N/A | N/A | N/A | N/A  
  
  
  **Persistent Cache**
@@ -86,7 +86,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `enablePersistentCache` | No | false | None | N/A
  | JS/TS | N/A | N/A | N/A | N/A 
  | Python | `enable_persistent_cache` | No | False | None | N/A 
- | Go | ? | ? | ? | ? 
+ | Go | N/A | N/A | N/A | N/A 
  
  
  #### Language Specific Input parameters
@@ -123,7 +123,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host."<br> 2."Authority host must use `HTTPS` scheme."
  | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
- | Go | ? | ? | ? | ? | ? 
+ | Go | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | None | N/A
  
  </br>
  </br>
@@ -156,6 +156,12 @@ const credential = new DeviceCodeCredential(
     undefined,
     "CLIENT_ID"
   );
+```
+
+**GO**
+```
+handler := func(string) {}
+cred, err := NewDeviceCodeCredential(nil, clientID, handler, nil)
 ```
 
 #### Maximum Credential Config possible by user
@@ -214,6 +220,13 @@ const credential = new DeviceCodeCredential(
     { authorityHost: "https://adfs.redmond.azurestack.corp.microsoft.com" }
   );
 ```
+
+
+**GO**
+```
+handler := func(string) {}
+cred, err := NewDeviceCodeCredential(tenantID, clientID, handler, &TokenCredentialOptions{HTTPClient: srv, AuthorityHost: srv.URL()})
+```
  </br>
  </br>
  </br>
@@ -228,9 +241,7 @@ Language | Message |
  | Java | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
  | JS/TS | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
  | Python | "To sign in, use a web browser to open the page https://microsoft.com/devicelogin and enter the code XXXXXXXX to authenticate." | 
- | Go | ? | 
- | C | ? | 
- | C++ | ? |
+ | Go | N/A  - User needs to provide the handler to handle the device code message details|
  
  **Authentication Failure Message**
 
@@ -265,6 +276,11 @@ Language | Message |
 --- | --- | --- |
  | Authentication issue on MSAL end | `Error` | "Device Authentication Error + MSAL Error Details" | 
 
+
+**GO**
+ Scenario | Exception/Error Type | Message | 
+--- | --- | --- |
+ | Authentication Failure | `AuthenticationFailedError` | "{Error Response message as it is}" |
 
 //TODO: Add and Discuss Language specific error messages (which can be potentially applied across the board)
 
@@ -302,10 +318,16 @@ Key Scenarios:
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
  | Error from MSAL | INFO | Message in the Error |
+ 
+ **GO**
+  Scenario | Log Level | Log Message | 
+--- | --- | --- |
+ | Token Fetch Success | LogCredential | "Azure Identity => GetToken() result for {Credential}: SUCCESS , Credential Scopes: [%s]" |
+ | Auth Failure | LogCredential | "Azure Identity => ERROR in GetToken() call for {Credential}: {ErrorDetails} {Stack}"| 
 
 
 //TODO: Add and Discuss Language specific logging scenarios (which can be potentially applied across the board)
 
 
-
+// Discuss Go Offline_access scopes logic.
  

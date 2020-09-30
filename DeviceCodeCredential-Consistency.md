@@ -8,7 +8,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 --- | --- | --- | --- | --- |---  
  | .NET | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Must be a valid Uri, validation done by URI constructor | N/A 
  | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI <br>2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host." <br>2."Authority host must use `HTTPS` scheme."
- | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
+ | JS/TS | `authorityHost` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | `authority` | No | "https://login.microsoftonline.com/ | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
  | Go | ? | ? | ? | ? | ? 
  
@@ -31,7 +31,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | .NET | `tenantId` or `TenantId` | No | "organizations" | None | N/A 
  | Java | `tenantId` | No | "organizations" | None | N/A 
  | JS/TS | `tenantId` | No | "organizations" | None | N/A 
- | Python | `tenantId` | No | "organizations" | None | N/A
+ | Python | `tenant_id` | No | "organizations" | None | N/A
  | Go | ? | ? | ? | ? 
  
   **Callback / Challenge**

@@ -257,7 +257,7 @@ Language | Message |
  | MSAL Authentication issue | `ClientAuthenticationError` | "Authentication failed: {MSAL error details/description}"" |
  | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableError` | "Authenticating in this environment requires a value for the 'scopes' keyword argument." | 
  | Automatic Authentication disabled and Get Token is called without calling authenticate first  | `AuthenticationRequiredError` | "Interactive authentication is required to get a token. Call 'authenticate' to begin. |
- | No Scope passed in | ValueError | "'get_token' requires at least one scope" | 
+ | No Scope passed in Get Token | ValueError | "'get_token' requires at least one scope" | 
 
 
  **JS/TS**

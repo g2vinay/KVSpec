@@ -29,7 +29,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- | --- |---  
  | .NET | `tenantId` or `TenantId` | No | "organizations" | None | N/A 
- | Java | `tenantId` | No | "organizations" | None | N/A 
+ | Java | `tenantId` | No | "organizations" | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for tenantId property in DeviceCodeCredentialBuilder."<br> 2."Tenant id must have characters in the range of [A-Z], [0-9], [a-z], '-', '.'"
  | JS/TS | `tenantId` | No | "organizations" | None | N/A 
  | Python | `tenant_id` | No | "organizations" | None | N/A
  | Go | `tenantID` | No | "organizations" | None | N/A 

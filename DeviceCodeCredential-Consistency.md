@@ -248,10 +248,10 @@ Language | Message |
 **.NET**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | ? | ? | ? |
- | ? | ? | ? | 
- | ? | ? | ? | 
- | ? | ? | ? | 
+ | Automatic Authentication disabled and Get Token is called without calling authenticate first | `AuthenticationRequiredException` | Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication. |
+ | Silent authentication fails | `AuthenticationRequiredException` | Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication. |
+ | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableException` | Authenticating in this environment requires specifying a TokenRequestContext. | 
+ | Failure do to unhandled exception | `AuthenticationFailedException` | DeviceCodeCredential authentication failed: {inner exception message}| 
  
  **Java**
  Scenario | Exception/Error Type | Message | 
@@ -296,10 +296,10 @@ Key Scenarios:
 **.NET**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | ? | ? | ? |
- | ? | ? | ? | 
- | ? | ? | ? | 
- | ? | ? | ? | 
+ | GetToken Called | INFO | DeviceCodeCredential invoked. Scopes: {1} ParentRequestId: {2} |
+ | GetToken Success | INFO | DeviceCodeCredential succeeded. Scopes: {1} ParentRequestId: {2} ExpiresOn: {3} |
+ | GetToken Failure | INFO |  DeviceCodeCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} | 
+ | Unandled Exception | INFO | DeviceCodeCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} Exception: {3} | 
  
  **Java**
  Scenario | Log Level | Log Message | 

@@ -119,7 +119,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 
  Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |--- |--- 
- | .NET | ? | ? | ? | ? | ?
+ | .NET | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" |Must be a valid Uri, validation done by URI constructor | N/A 
  | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host."<br> 2."Authority host must use `HTTPS` scheme."
  | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."

@@ -21,7 +21,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `clientId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for clientId property in DeviceCodeCredentialBuilder."<br> 2."Client id must have characters in the range of [A-Z], [0-9], [a-z], '-'"
  | JS/TS | `clientId` | Yes | N/A | None | N/A 
  | Python | `client_id` | Yes | N/A | None | N/A 
- | Go | `clientID` | ? | Yes | N/A | None | N/A 
+ | Go | `clientID` | Yes | N/A | None | N/A 
  
  
   **TenantId**

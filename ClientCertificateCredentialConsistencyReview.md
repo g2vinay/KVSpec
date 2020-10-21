@@ -3,19 +3,48 @@
 ### Input Parameters
 
 **AuthorityHost**
-
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Must be a valid Uri, validation done by URI constructor | N/A 
+ | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI <br>2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host." <br>2."Authority host must use `HTTPS` scheme."
+ | JS/TS | `authorityHost` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
+ | Python | `authority` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
+ | Go | `AuthorityHost` | No | "https://login.microsoftonline.com/" | None | N/A
  
  
  **ClientId**
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `clientId` or `ClientId` | No | "04b07795-8ddb-461a-bbee-02f9e1bf7b46" | If specified, must be non-null |  ArgumentNullException "clientId"
+ | Java | `clientId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for clientId property in DeviceCodeCredentialBuilder."<br> 2."Client id must have characters in the range of [A-Z], [0-9], [a-z], '-'"
+ | JS/TS | `clientId` | Yes | N/A | None | N/A 
+ | Python | `client_id` | Yes | N/A | None | N/A 
+ | Go | `clientID` | Yes | N/A | None | N/A 
+ 
+ 
+ **TenantId**
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `tenantId` or `TenantId` | No | "organizations" | None | N/A 
+ | Java | `tenantId` | No | "organizations" | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for tenantId property in DeviceCodeCredentialBuilder."<br> 2."Tenant id must have characters in the range of [A-Z], [0-9], [a-z], '-', '.'"
+ | JS/TS | `tenantId` | No | "organizations" | None | N/A 
+ | Python | `tenant_id` | No | "organizations" | None | N/A
+ | Go | `tenantID` | No | "organizations" | None | N/A 
+ 
+ 
+**Certificate**
+Language | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- |---  
+ | .NET | ? | ? | ? | ? 
+ | Java | ? | ? | ? | ? 
+ | JS/TS | ? | ? | ? | ? 
+ | Python | ? | ? | ? | ? 
+ | Go | ? | ? | ? | ? 
+ | C | ? | ? | ? | ? 
+ | C++ | ? | ? | ? | ? 
+ 
+ 
+**Certificate Path**
 
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  
@@ -28,46 +57,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  | C++ | ? | ? | ? | ? 
  
  
-  **TenantId**
-
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
- 
-  ** Certificate **
-
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
- 
- 
-** Certificate Path **
-
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
- 
- 
- **Include X5C**
-
+ **Send Certificate Chain**
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  
  | .NET | ? | ? | ? | ? 
@@ -80,40 +70,36 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
  
   **Unencrypted Cache**
-
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `AllowUnencryptedCache` | No | false | None | N/A 
+ | Java | `allowUnencryptedCache` | No | false | None | N/A
+ | JS/TS | N/A | N/A | N/A | N/A 
+ | Python | `allow_unencrypted_cache` | No | False | None | N/A 
+ | Go | N/A | N/A | N/A | N/A  
  
  
  **Persistent Cache**
-
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- |---  
+ | .NET | `EnablePersistentCache` | No | false | None | N/A 
+ | Java | `enablePersistentCache` | No | false | None | N/A
+ | JS/TS | N/A | N/A | N/A | N/A 
+ | Python | `enable_persistent_cache` | No | False | None | N/A 
+ | Go | N/A | N/A | N/A | N/A 
  
  
  #### Language Specific Input parameters
 
   **Executor Service** (Java only)
   
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | Java | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- |--- |---  
+ | Java | `executorService` | No | null | None | N/A 
  
  //TODO: Add and Discuss Language specific input parameters (which can be potentially applied across the board)
+
+
 
 
  
@@ -124,15 +110,13 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  ### Environment Variables
 
 **AUTHORITY HOST**
- Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
+ Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- |--- |--- 
+ | .NET | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" |Must be a valid Uri, validation done by URI constructor | N/A 
+ | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host."<br> 2."Authority host must use `HTTPS` scheme."
+ | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
+ | Python | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
+ | Go | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | None | N/A
  
  **CERTIFICATE PATH**
  Language | Required ? | Default Value | Validations | Validation Failure Message 
@@ -200,32 +184,44 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
 ### Messages (Success + Failure) displayed to user.
 
-#### Minimal Credential Config needed by user
+**Authentication Failure Message**
 
-**Device Code Info Message**
-
-Language | Message |
---- | --- | 
- | .NET | ? | 
- | Java | ? | 
- | JS/TS | ? | 
- | Python | ? | 
- | Go | ? | 
- | C | ? | 
- | C++ | ? |
- 
- **Authentication Failure Message**
-
- Language | Exception Type | Message | 
+**.NET**
+ Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | .NET | ? | ? |
- | Java | ? | ? | 
- | JS/TS | ? | ? | 
- | Python | ? | ? | 
- | Go | ? | ? | 
- | C | ? | ? | 
- | C++ | ? | ? |
+ | Automatic Authentication disabled and Get Token is called without calling authenticate first | `AuthenticationRequiredException` | Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication. |
+ | Silent authentication fails | `AuthenticationRequiredException` | Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication. |
+ | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableException` | Authenticating in this environment requires specifying a TokenRequestContext. | 
+ | Failure do to unhandled exception | `AuthenticationFailedException` | DeviceCodeCredential authentication failed: {inner exception message}| 
+ 
+ **Java**
+ Scenario | Exception/Error Type | Message | 
+--- | --- | --- |
+ | Automatic Authentication disabled and Get Token is called without calling authenticate first  | `AuthenticationRequiredException` | "Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication." |
+ | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableException` | "Authenticating in this environment requires specifying a TokenRequestContext." | 
+ | Authentication issue on MSAL end | `ClientAuthenticationException` | "Failed to acquire token with device code" | 
+ 
+ **Python**
+ Scenario | Exception/Error Type | Message | 
+--- | --- | --- |
+ | MSAL issue in Intiating device flow | `ClientAuthenticationError` | "Couldn't begin authentication: {Error Details from MSAL}" |
+ | MSAL timed out waiting for user to authenticate | `ClientAuthenticationError` | "Timed out waiting for user to authenticate" | 
+ | MSAL Authentication issue | `ClientAuthenticationError` | "Authentication failed: {MSAL error details/description}"" |
+ | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableError` | "Authenticating in this environment requires a value for the 'scopes' keyword argument." | 
+ | Automatic Authentication disabled and Get Token is called without calling authenticate first  | `AuthenticationRequiredError` | "Interactive authentication is required to get a token. Call 'authenticate' to begin. |
+ | No Scope passed in Get Token | ValueError | "'get_token' requires at least one scope" | 
 
+
+ **JS/TS**
+ Scenario | Exception/Error Type | Message | 
+--- | --- | --- |
+ | Authentication issue on MSAL end | `Error` | "Device Authentication Error + MSAL Error Details" | 
+
+
+**GO**
+ Scenario | Exception/Error Type | Message | 
+--- | --- | --- |
+ | Authentication Failure | `AuthenticationFailedError` | "{Error Response message as it is}" |
 
 //TODO: Add and Discuss Language specific error messages (which can be potentially applied across the board)
 
@@ -234,34 +230,41 @@ Language | Message |
  </br>
 
 ### Logging Scenarios 
+Key Scenarios:
+1. Token Fetch Success
+2. Token Fetch Failure
 
-**Token Fetch Success**
-
- Language | Log Level | Log Message | 
+**.NET**
+ Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | .NET | ? | ? |
- | Java | ? | ? | 
- | JS/TS | ? | ? | 
- | Python | ? | ? | 
- | Go | ? | ? | 
- | C | ? | ? | 
- | C++ | ? | ? |
+ | GetToken Called | INFO | DeviceCodeCredential invoked. Scopes: {1} ParentRequestId: {2} |
+ | GetToken Success | INFO | DeviceCodeCredential succeeded. Scopes: {1} ParentRequestId: {2} ExpiresOn: {3} |
+ | GetToken Failure | INFO |  DeviceCodeCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} | 
+ | Unandled Exception | INFO | DeviceCodeCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} Exception: {3} | 
  
- **Token Fetch Failure**
-
- Language | Log Level| Log Message | 
+ **Java**
+ Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | .NET | ? | ? |
- | Java | ? | ? | 
- | JS/TS | ? | ? | 
- | Python | ? | ? | 
- | Go | ? | ? | 
- | C | ? | ? | 
- | C++ | ? | ? |
+ | Token Fetch Success | INFO | Azure Identity => getToken() result for scopes [{}]: SUCCESS|
+ | Token Fetch Failure | ERROR | Azure Identity => ERROR in getToken() call for scopes [{}]: {} | 
+ | Any Exception | ERROR | Error Message in the Exception | 
+ 
+ **Python**
+ Scenario | Log Level | Log Message | 
+--- | --- | --- |
+ | Any Error raised in Get token | WARN | "{ClassName}.get_token failed: {Error Details}" |
+ | Token Fetch Success | INFO | "{ClassName}.get_token succeeded" | 
+ 
+ **JS/TS**
+ Scenario | Log Level | Log Message | 
+--- | --- | --- |
+ | Error from MSAL | INFO | Message in the Error |
+ 
+ **GO**
+  Scenario | Log Level | Log Message | 
+--- | --- | --- |
+ | Token Fetch Success | LogCredential | "Azure Identity => GetToken() result for {Credential}: SUCCESS , Credential Scopes: [%s]" |
+ | Auth Failure | LogCredential | "Azure Identity => ERROR in GetToken() call for {Credential}: {ErrorDetails} {Stack}"| 
 
 
 //TODO: Add and Discuss Language specific logging scenarios (which can be potentially applied across the board)
-
-
-
- 

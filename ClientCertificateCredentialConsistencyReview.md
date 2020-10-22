@@ -1,5 +1,7 @@
 ## Client Certificate Credential Review
 
+In Python, its called Certificate Credential.
+
 ### Input Parameters
 
 **AuthorityHost**
@@ -32,10 +34,10 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Go | `tenantID` | No | "organizations" | None | N/A 
  
  
-**Certificate**
+**Certificate (X509)**
 Language | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
+ | .NET | `certificate` | Yes | No | Must be non-null |  ArgumentNullException "Certificate"
  | Java | ? | ? | ? | ? 
  | JS/TS | ? | ? | ? | ? 
  | Python | ? | ? | ? | ? 
@@ -46,24 +48,37 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  
 **Certificate Path**
 
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- | ---
+ | .NET | `clientCertificatePath` | Yes | No | Must be non-null |  ArgumentNullException "certificatePath"
+ | Java | `pemCertificate` / `pfxCertificate`| Yes | No | 1. Must be non-null, 2.File Path validation | 1. "Must provide non-null values for clientCertificate property in ClientCertificateCredentialBuilder."<br> 2."<PATH> is not valid. The path contains invalid characters `.` or `..`"
+ | JS/TS | ? | ? | ? | ? | ?
+ | Python | `certificate_path` | Yes | No | Must not be None |  "'certificate_path' must be the path to a PEM file containing an x509 certificate and its private key"
+ | Go | ? | ? | ? | ? | ?
+ | C | ? | ? | ? | ? | ?
+ | C++ | ? | ? | ? | ? | ?
+ 
+ **Password**
+
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- | ---
+ | .NET | Not available | N/A | N/A | N/A | N/A
+ | Java | Not available | N/A | N/A | N/A | N/A
  | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
+ | Python | `password` | No | None | No |  N/A
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
  | C++ | ? | ? | ? | ? 
  
  
+ 
  **Send Certificate Chain**
-Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
+Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
+--- | --- | --- | --- | --- | ---
+ | .NET | `IncludeX5CClaimHeader` | No | false | No | N/A 
+ | Java | `includeX5c` | No | false | No | N/A 
  | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
+ | Python | `send_certificate` | No | false | No | N/A 
  | Go | ? | ? | ? | ? 
  | C | ? | ? | ? | ? 
  | C++ | ? | ? | ? | ? 
@@ -118,17 +133,6 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Python | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
  | Go | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | None | N/A
  
- **CERTIFICATE PATH**
- Language | Required ? | Default Value | Validations | Validation Failure Message 
---- | --- | --- | --- |---  
- | .NET | ? | ? | ? | ? 
- | Java | ? | ? | ? | ? 
- | JS/TS | ? | ? | ? | ? 
- | Python | ? | ? | ? | ? 
- | Go | ? | ? | ? | ? 
- | C | ? | ? | ? | ? 
- | C++ | ? | ? | ? | ? 
- 
  </br>
  </br>
  </br>
@@ -139,7 +143,19 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 
 **Java**
 ```
-??
+ClientCertificateCredential certificateCredential = new ClientCertificateCredentialBuilder()
+        .pemCertificate("Certificate-Path")
+        .clientId("xxxx-xxxxxx-xxxxxx-xxxx")
+        .tenantId("xxxx-xxxxxx-xxxxxx-xxxx")
+        .build();
+        
+        OR
+        
+ClientCertificateCredential certificateCredential = new ClientCertificateCredentialBuilder()
+        .pfxCertificate("Certificate-Path", "<Cert-Password>")
+        .clientId("xxxx-xxxxxx-xxxxxx-xxxx")
+        .tenantId("xxxx-xxxxxx-xxxxxx-xxxx")
+        .build();
 ```
 
 **.NET**
@@ -160,8 +176,20 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 #### Maximum Credential Config possible by user
 
 **Java**
-```
-??
+```java
+ ClientCertificateCredential certificateCredential = new ClientCertificateCredentialBuilder()
+         .pemCertificate("Certificate-Path")
+         .pfxCertificate("Certificate-Path", "Cert-password")
+         .clientId("xxxx-xxxxxx-xxxxxx-xxxx")
+         .tenantId("yyyy-yyyyyy-yyyyyy-yyyy")
+         .authorityHost(AzureAuthorityHosts.AZURE_PUBLIC_CLOUD)
+         .includeX5c(true)
+         .allowUnencryptedCache()
+         .enablePersistentCache()
+         .executorService(Executors.newSingleThreadExecutor())
+         .httpClient(HttpClient.createDefault())
+         .httpPipeline(new HttpPipelineBuilder().build())
+         .build();
 ```
 
 **.NET**
@@ -189,23 +217,19 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
 **.NET**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | Automatic Authentication disabled and Get Token is called without calling authenticate first | `AuthenticationRequiredException` | Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication. |
- | Silent authentication fails | `AuthenticationRequiredException` | Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication. |
- | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableException` | Authenticating in this environment requires specifying a TokenRequestContext. | 
- | Failure do to unhandled exception | `AuthenticationFailedException` | DeviceCodeCredential authentication failed: {inner exception message}| 
+ | CertPath File doesn't have .pem or .pfx suffix | `CredentialUnavailableException` | Only .pfx and .pem files are supported. |
+ | Certificate File Reading Issue | `CredentialUnavailableException` | "Could not load certificate file"
+ | Failure due to unhandled exception | `AuthenticationFailedException` | ClientCertificateCredential authentication failed: {inner exception message}| 
  
  **Java**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | Automatic Authentication disabled and Get Token is called without calling authenticate first  | `AuthenticationRequiredException` | "Interactive authentication is needed to acquire token. Call Authenticate to initiate the device code authentication." |
- | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableException` | "Authenticating in this environment requires specifying a TokenRequestContext." | 
- | Authentication issue on MSAL end | `ClientAuthenticationException` | "Failed to acquire token with device code" | 
+ | Authentication issue on MSAL end | <MSAL Exception Type> | <MSAL Failure Message> |
  
  **Python**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | MSAL issue in Intiating device flow | `ClientAuthenticationError` | "Couldn't begin authentication: {Error Details from MSAL}" |
- | MSAL timed out waiting for user to authenticate | `ClientAuthenticationError` | "Timed out waiting for user to authenticate" | 
+ | Issue Extracting Cert Chain | `ValueError` | Found no PEM encoded certificate in "<Cert-Path>" |
  | MSAL Authentication issue | `ClientAuthenticationError` | "Authentication failed: {MSAL error details/description}"" |
  | Scope cannot be determined for authority host in authenticate method. | `CredentialUnavailableError` | "Authenticating in this environment requires a value for the 'scopes' keyword argument." | 
  | Automatic Authentication disabled and Get Token is called without calling authenticate first  | `AuthenticationRequiredError` | "Interactive authentication is required to get a token. Call 'authenticate' to begin. |
@@ -237,10 +261,10 @@ Key Scenarios:
 **.NET**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | GetToken Called | INFO | DeviceCodeCredential invoked. Scopes: {1} ParentRequestId: {2} |
- | GetToken Success | INFO | DeviceCodeCredential succeeded. Scopes: {1} ParentRequestId: {2} ExpiresOn: {3} |
- | GetToken Failure | INFO |  DeviceCodeCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} | 
- | Unandled Exception | INFO | DeviceCodeCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} Exception: {3} | 
+ | GetToken Called | INFO | ClientCertificateCredential invoked. Scopes: {1} ParentRequestId: {2} |
+ | GetToken Success | INFO | ClientCertificateCredential succeeded. Scopes: {1} ParentRequestId: {2} ExpiresOn: {3} |
+ | GetToken Failure | INFO |  ClientCertificateCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} | 
+ | Unandled Exception | INFO | ClientCertificateCredential was unable to retrieve an access token. Scopes: {1} ParentRequestId: {2} Exception: {3} | 
  
  **Java**
  Scenario | Log Level | Log Message | 
@@ -252,8 +276,7 @@ Key Scenarios:
  **Python**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | Any Error raised in Get token | WARN | "{ClassName}.get_token failed: {Error Details}" |
- | Token Fetch Success | INFO | "{ClassName}.get_token succeeded" | 
+ | No Scenarios found | N/A | N/A |
  
  **JS/TS**
  Scenario | Log Level | Log Message | 

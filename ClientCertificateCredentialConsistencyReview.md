@@ -42,7 +42,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
  | Java | N/A | N/A | N/A | N/A 
  | JS/TS | N/A | N/A | N/A | N/A 
  | Python | N/A | N/A | N/A | N/A 
- | Go | ? | ? | ? | ? 
+ | Go | N/A | N/A | N/A | N/A 
  
  
 **Certificate Path**

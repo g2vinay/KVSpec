@@ -13,6 +13,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Python | `authority` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
  | Go | `AuthorityHost` | No | "https://login.microsoftonline.com/" | None | N/A
  
+ // Curious question: Discuss possbiliy flattening the Options in GO
  
  **ClientId**
 Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
@@ -31,7 +32,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `tenantId` | Yes | N/A | 1. Must be non-null, 2.Character range validated | 1. "Must provide non-null values for tenantId property in DeviceCodeCredentialBuilder."<br> 2."Tenant id must have characters in the range of [A-Z], [0-9], [a-z], '-', '.'"
  | JS/TS | `tenantId` | Yes | N/A | N/A 
  | Python | `tenant_id` | Yes | N/A | None | N/A
- | Go | `tenantID` | Yes | N/A | None | N/A 
+ | Go | `tenantID` | Yes | N/A | 1.Character Range Validation | "Invalid tenant ID passed to credential."
  
  
 **Certificate (X509)**
@@ -51,8 +52,8 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | .NET | `clientCertificatePath` | Yes | No | Must be non-null |  ArgumentNullException "certificatePath"
  | Java | `pemCertificate` / `pfxCertificate`| Yes | No | 1. Must be non-null, 2.File Path validation | 1. "Must provide non-null values for clientCertificate property in ClientCertificateCredentialBuilder."<br> 2."< PATH > is not valid. The path contains invalid characters `.` or `..`"
  | JS/TS | `certificatePath` | Yes | No | No | N/A
- | Python | `certificate_path` | Yes | No | Must not be None |  "'certificate_path' must be the path to a PEM file containing an x509 certificate and its private key"
- | Go | ? | ? | ? | ? | ?
+ | Python | `certificate_path` | Yes | No | Must not be None |  "'certificate_path' must be the path to a PEM file containing an x509 certificate and its private key
+ | Go | `clientCertificate` | Yes | No | Cert File Presen at the path | "Certificate file not found in path: < Cert Path >"
  
  **Password**
 
@@ -62,7 +63,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | Not available | N/A | N/A | N/A | N/A
  | JS/TS | Not available | N/A | N/A | N/A | N/A 
  | Python | `password` | No | None | No |  N/A
- | Go | ? | ? | ? | ? 
+ | Go | `Password` | No | N/A | No | N/A
  
  
  
@@ -73,7 +74,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `includeX5c` | No | false | No | N/A 
  | JS/TS | `includeX5c` | No | false | No | N/A
  | Python | `send_certificate` | No | false | No | N/A 
- | Go | ? | ? | ? | ? 
+ | Go | Not available | N/A | N/A | N/A 
  
  
   **Unencrypted Cache**
@@ -232,7 +233,11 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem", password="s
 **GO**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | ? | ? | ? |
+ | Invalid Tenant ID | `CredentialUnavailableError` | "invalid tenant ID passed to credential" |
+ | Cert File Not found at the path | `CredentialUnavailableError` | "Certificate file not found in path: < Cert Path >" |
+ | Error Reading Cert File | `CredentialUnavailableError` | "< Source Error Message as it is >" |
+ | Authentication Failure | `AuthenticationFailedError` | "{Error Response message as it is}" |
+
 
 //TODO: Add and Discuss Language specific error messages (which can be potentially applied across the board)
 
@@ -266,6 +271,7 @@ Key Scenarios:
  | Any Error raised in Get token | WARN | "{ClassName}.get_token failed: {Error Details}" |
  | Token Fetch Success | INFO | "{ClassName}.get_token succeeded" | 
  
+ 
  **JS/TS**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
@@ -276,8 +282,8 @@ Key Scenarios:
  **GO**
   Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | ? | ? | ? |
- | ?| ? | ? | 
-
+ | Token Fetch Success | LogCredential | "Azure Identity => GetToken() result for {Credential}: SUCCESS , Credential Scopes: [%s]" |
+ | Auth Failure | LogCredential | "Azure Identity => ERROR in GetToken() call for {Credential}: {ErrorDetails} {Stack}"| 
+ | Any Error beside Auth Error | LogCredential | "Azure Identity => ERROR in {Credential}: {ErrorDetails}"
 
 //TODO: Add and Discuss Language specific logging scenarios (which can be potentially applied across the board)

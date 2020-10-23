@@ -49,7 +49,7 @@ Language | Required ? | Default Value | Validations | Validation Failure Message
 Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
 --- | --- | --- | --- | --- | ---
  | .NET | `clientCertificatePath` | Yes | No | Must be non-null |  ArgumentNullException "certificatePath"
- | Java | `pemCertificate` / `pfxCertificate`| Yes | No | 1. Must be non-null, 2.File Path validation | 1. "Must provide non-null values for clientCertificate property in ClientCertificateCredentialBuilder."<br> 2."<PATH> is not valid. The path contains invalid characters `.` or `..`"
+ | Java | `pemCertificate` / `pfxCertificate`| Yes | No | 1. Must be non-null, 2.File Path validation | 1. "Must provide non-null values for clientCertificate property in ClientCertificateCredentialBuilder."<br> 2."< PATH > is not valid. The path contains invalid characters `.` or `..`"
  | JS/TS | `certificatePath` | Yes | No | No | N/A
  | Python | `certificate_path` | Yes | No | Must not be None |  "'certificate_path' must be the path to a PEM file containing an x509 certificate and its private key"
  | Go | ? | ? | ? | ? | ?

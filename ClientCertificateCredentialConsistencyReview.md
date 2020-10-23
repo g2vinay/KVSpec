@@ -286,4 +286,3 @@ Key Scenarios:
  | Auth Failure | LogCredential | "Azure Identity => ERROR in GetToken() call for {Credential}: {ErrorDetails} {Stack}"| 
  | Any Error beside Auth Error | LogCredential | "Azure Identity => ERROR in {Credential}: {ErrorDetails}"
 
-//TODO: Add and Discuss Language specific logging scenarios (which can be potentially applied across the board)

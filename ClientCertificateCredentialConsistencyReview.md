@@ -153,7 +153,7 @@ ClientCertificateCredential certificateCredential = new ClientCertificateCredent
 
 **Python**
 ```
-??
+CertificateCredential("tenant id", "client id", "/home/me/cert.pem")
 ```
 
 **JS/TS**
@@ -187,7 +187,7 @@ ClientCertificateCredential certificateCredential = new ClientCertificateCredent
 
 **Python**
 ```
-??
+CertificateCredential("tenant id", "client id", "/home/me/cert.pem", password="secret", send_certificate_chain=True)
 ```
 
 **JS/TS**

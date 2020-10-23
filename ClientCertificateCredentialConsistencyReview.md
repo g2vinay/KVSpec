@@ -270,8 +270,8 @@ Key Scenarios:
  **JS/TS**
  Scenario | Log Level | Log Message | 
 --- | --- | --- |
- | Auth Error / Validation Error | INFO | "ERROR: <ErrorMessage>" |
- | Token Fetch Success | INFO | "SUCCESS: <Scopes>"|
+ | Auth Error / Validation Error | INFO | "ERROR: < ErrorMessage >" |
+ | Token Fetch Success | INFO | "SUCCESS: < Scopes >"|
 
  
  **GO**

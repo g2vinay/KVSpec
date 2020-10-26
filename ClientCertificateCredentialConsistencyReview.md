@@ -252,7 +252,7 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem", password="s
  **Java**
  Scenario | Exception/Error Type | Message | 
 --- | --- | --- |
- | Authentication issue on MSAL end | <MSAL Exception Type> | <MSAL Failure Message> |
+ | Authentication issue on MSAL end | < MSAL Exception Type > | < MSAL Failure Message > |
  
  **Python**
  Scenario | Exception/Error Type | Message | 

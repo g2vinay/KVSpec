@@ -13,7 +13,6 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Python | `authority` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
  | Go | `AuthorityHost` | No | "https://login.microsoftonline.com/" | None | N/A
  
- // Curious question: Discuss possbiliy flattening the Options in GO
  
  **ClientId**
 Language | Name | Required ? | Default Value | Validations | Validation Failure Message 
@@ -231,6 +230,8 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem", password="s
 ```
  NewClientCertificateCredential(tenantID, clientID, wrongCertificatePath, &ClientCertificateCredentialOptions{Options: &TokenCredentialOptions{HTTPClient: srv, AuthorityHost: srv.URL()}})
 ```
+
+// QOOC: Discuss possbility of flattening the Options in GO
 
 
  </br>

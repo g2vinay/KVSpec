@@ -149,7 +149,7 @@ ClientCertificateCredential certificateCredential = new ClientCertificateCredent
 
 **.NET**
 ```
-??
+var credential = new ClientCertificateCredential(tenantId, clientId, clientCertificatePath)
 ```
 
 **Python**
@@ -159,7 +159,16 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem")
 
 **JS/TS**
 ```
-??
+ const credential = new ClientCertificateCredential(
+   "tenant",
+   "client",
+   path.resolve(__dirname, "../test/azure-identity-test.crt")
+ );
+```
+
+**Go**
+```
+NewClientCertificateCredential(tenantID, clientID, CertificatePath, nil)
 ```
 
 #### Maximum Credential Config possible by user
@@ -183,7 +192,18 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem")
 
 **.NET**
 ```
-??
+ClientCertificateCredentialOptions options = new ClientCertificateCredentialOptions { 
+  IncludeX5CClaimHeader = true,
+  AuthorityHost = AzureAuthorityHosts.AzurePublicCloud,
+  EnablePersistentCache = false,
+  AllowUnencryptedCache = false }
+
+
+var credential = new ClientCertificateCredential(tenantId, clientId, clientCertificatePath, options)
+
+OR 
+
+var credential = new ClientCertificateCredential(tenantId, clientId, new X509Certificate2(certPath), options)
 ```
 
 **Python**
@@ -193,8 +213,26 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem", password="s
 
 **JS/TS**
 ```
-??
+ const credential = new ClientCertificateCredential(
+   tenantId,
+   clientId,
+   path.resolve(__dirname, "../test/azure-identity-test.crt"),
+   {
+      authorityHost: "https://authority",
+      includeX5c: true,
+      httpClient: this,
+      retryOptions: {
+        maxRetries: 0
+      }
+ );
 ```
+
+**Go**
+```
+ NewClientCertificateCredential(tenantID, clientID, wrongCertificatePath, &ClientCertificateCredentialOptions{Options: &TokenCredentialOptions{HTTPClient: srv, AuthorityHost: srv.URL()}})
+```
+
+
  </br>
  </br>
  </br>

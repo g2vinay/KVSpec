@@ -11,7 +11,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `authorityHost` | No | "https://login.microsoftonline.com/" | 1. Valid URI <br>2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host." <br>2."Authority host must use `HTTPS` scheme."
  | JS/TS | `authorityHost` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | `authority` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
- | Go | `AuthorityHost` | No | "https://login.microsoftonline.com/" | None | N/A
+ | Go | `AuthorityHost` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "cannot use an authority host without https"
  
  
  **ClientId**
@@ -52,7 +52,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java | `pemCertificate` / `pfxCertificate`| Yes | No | 1. Must be non-null, 2.File Path validation | 1. "Must provide non-null values for clientCertificate property in ClientCertificateCredentialBuilder."<br> 2."< PATH > is not valid. The path contains invalid characters `.` or `..`"
  | JS/TS | `certificatePath` | Yes | No | No | N/A
  | Python | `certificate_path` | Yes | No | Must not be None |  "'certificate_path' must be the path to a PEM file containing an x509 certificate and its private key
- | Go | `clientCertificate` | Yes | No | Cert File Presen at the path | "Certificate file not found in path: < Cert Path >"
+ | Go | `clientCertificate` | Yes | No | Cert File Present at the path and read file contents | "Certificate file not found in path: < Cert Path >"
  
  **Password**
 
@@ -119,7 +119,7 @@ Language | Name | Required ? | Default Value | Validations | Validation Failure 
  | Java |  `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1. Valid URI,  2.Follow `HTTPS` protocol | 1. "Must provide a valid URI for authority host."<br> 2."Authority host must use `HTTPS` scheme."
  | JS/TS | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "The authorityHost address must use the 'https' protocol." 
  | Python | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | Follow `HTTPS` protocol | "'{}' is an invalid authority. The value must be a TLS protected (https) URL."
- | Go | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | None | N/A
+ | Go | `AZURE_AUTHORITY_HOST` | No | "https://login.microsoftonline.com/" | 1.Character Range Validation | "Invalid tenant ID passed to credential."
  
  </br>
  </br>
@@ -167,7 +167,7 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem")
 
 **Go**
 ```
-NewClientCertificateCredential(tenantID, clientID, CertificatePath, nil)
+cred, err := NewClientCertificateCredential(tenantID, clientID, CertificatePath, nil)
 ```
 
 #### Maximum Credential Config possible by user
@@ -228,7 +228,7 @@ CertificateCredential("tenant id", "client id", "/home/me/cert.pem", password="s
 
 **Go**
 ```
- NewClientCertificateCredential(tenantID, clientID, wrongCertificatePath, &ClientCertificateCredentialOptions{Options: &TokenCredentialOptions{HTTPClient: srv, AuthorityHost: srv.URL()}})
+cred, err := NewClientCertificateCredential(tenantID, clientID, CertificatePath, &ClientCertificateCredentialOptions{Options: &TokenCredentialOptions{HTTPClient: srv, AuthorityHost: srv.URL()}})
 ```
 
 // QOOC: Discuss possbility of flattening the Options in GO

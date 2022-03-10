@@ -21,7 +21,7 @@ Azure Kubernetes and GitHub are looking to provide end users with signed JWT Tok
 ClientAssertionCredential clientAssertionCredential = new ClientAssertionCredentialBuilder()
         .clientId("Client-Id")
         .tenantId("Tenant-Id")
-        .clientAssertion(() -> parseClientAssertion(System.getenv(AZURE_FEDERATED_TOKEN_FILE)))
+        .clientAssertion(() -> readClientAssertion(System.getenv(AZURE_FEDERATED_TOKEN_FILE)))
         .build();
 
 AccessToken accessToken = clientAssertionCredential

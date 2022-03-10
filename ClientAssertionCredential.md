@@ -12,7 +12,7 @@ Azure Kubernetes and GitHub are looking to provide end users with signed JWT Tok
 
 ### API
 
-![image](https://user-images.githubusercontent.com/5430778/157739237-405d180d-7943-49e3-81a5-f8a0d6a7fc39.png)
+![image](https://user-images.githubusercontent.com/5430778/157745060-6c47709d-2154-4140-8c13-62ec944cd82c.png)
 
 #### Code Sample
 

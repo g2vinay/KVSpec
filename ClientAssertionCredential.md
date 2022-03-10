@@ -8,7 +8,7 @@ Azure Kubernetes and GitHub are looking to provide end users with signed JWT Tok
 
 #### Pros
 * Client Secret is no longer used, avoids the security risk of it being leaked.
-* Client Assertin allows clients to use X.509 certificate to prove token request came from the client. Easier to restrict access to a certificate installed on a web server than to ensure nobody accidentally reveals a client secret. 
+* Client Assertion allows clients to use X.509 certificate to prove token request came from the client. Easier to restrict access to a certificate installed on a web server than to ensure nobody accidentally reveals a client secret. 
 
 ### API
 

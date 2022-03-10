@@ -1,4 +1,4 @@
-### Conext
+### Context
 Adds Support for Azure AD Client Assertion authentication flow.
 Allows the end users to exchange a signed JWT token for an AAD access token.
 
